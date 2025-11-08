@@ -1,0 +1,349 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Echo Registry API",
+    "description": "Where dependency versions resonate - Latest Forge, NeoForge, Fabric, and popular mod versions for Minecraft",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Echo Registry"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://echo-registry.vercel.app",
+      "description": "Production server"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Development server"
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "Health check",
+        "description": "Check the health status of the API and external services",
+        "tags": ["Health"],
+        "responses": {
+          "200": {
+            "description": "Health status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service unavailable"
+          }
+        }
+      }
+    },
+    "/api/versions/minecraft": {
+      "get": {
+        "summary": "Get all Minecraft versions",
+        "description": "Retrieve a list of all available Minecraft versions",
+        "tags": ["Versions"],
+        "responses": {
+          "200": {
+            "description": "List of Minecraft versions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MinecraftVersionsResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to fetch versions"
+          }
+        }
+      }
+    },
+    "/api/versions/dependencies/{mcVersion}": {
+      "get": {
+        "summary": "Get all dependencies for Minecraft version",
+        "description": "Retrieve all dependency versions for a specific Minecraft version",
+        "tags": ["Dependencies"],
+        "parameters": [
+          {
+            "name": "mcVersion",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1.21.1"
+          },
+          {
+            "name": "projects",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated list of additional Modrinth projects to include",
+            "example": "fabric-api,modmenu,rei"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of dependency versions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DependenciesResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to fetch dependencies"
+          }
+        }
+      }
+    },
+      "/api/cleanup": {
+      "post": {
+        "summary": "Clean up expired cache entries",
+        "description": "Remove expired entries from the cache (for cron jobs)",
+        "tags": ["Admin"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cleanup completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    },
+                    "stats": {
+                      "$ref": "#/components/schemas/CacheStats"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Cleanup failed"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DependencyVersion": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Dependency name"
+          },
+          "loader": {
+            "type": "string",
+            "enum": ["forge", "neoforge", "fabric", "universal"],
+            "description": "Loader type"
+          },
+          "version": {
+            "type": "string",
+            "description": "Version string"
+          },
+          "mc_version": {
+            "type": "string",
+            "description": "Minecraft version"
+          },
+          "source_url": {
+            "type": "string",
+            "description": "Source URL for version information"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Additional notes about the version"
+          },
+          "fallback_used": {
+            "type": "boolean",
+            "description": "Whether a fallback version was used"
+          },
+          "cached_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When this version was cached"
+          }
+        }
+      },
+      "MinecraftVersion": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Version ID"
+          },
+          "version_type": {
+            "type": "string",
+            "enum": ["release", "snapshot", "old_beta", "old_alpha"],
+            "description": "Version type"
+          },
+          "release_time": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Release timestamp"
+          }
+        }
+      },
+      "ApiResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "description": "Response data"
+          },
+          "error": {
+            "type": "string",
+            "description": "Error message (if any)"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Response timestamp"
+          },
+          "cached_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Cache timestamp"
+          }
+        }
+      },
+      "HealthResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": ["ok", "degraded", "down"]
+              },
+              "cache_status": {
+                "type": "string",
+                "enum": ["connected", "disconnected", "error"]
+              },
+              "external_apis": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string",
+                  "enum": ["ok", "error"]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "DependenciesResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "mc_version": {
+                    "type": "string"
+                  },
+                  "dependencies": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/DependencyVersion"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+        "MinecraftVersionsResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "versions": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/MinecraftVersion"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "CacheStats": {
+        "type": "object",
+        "properties": {
+          "dependency_cache_count": {
+            "type": "integer"
+          },
+          "minecraft_versions_count": {
+            "type": "integer"
+          },
+          "expired_entries": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Health",
+      "description": "Health check endpoints"
+    },
+    {
+      "name": "Versions",
+      "description": "Minecraft version endpoints"
+    },
+    {
+      "name": "Dependencies",
+      "description": "Dependency version endpoints"
+    },
+    {
+      "name": "Admin",
+      "description": "Administrative endpoints"
+    }
+  ]
+}

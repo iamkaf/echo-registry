@@ -10,7 +10,7 @@
   },
   "servers": [
     {
-      "url": "https://echo-registry.vercel.app",
+      "url": "https://echo.iamkaf.com",
       "description": "Production server"
     },
     {

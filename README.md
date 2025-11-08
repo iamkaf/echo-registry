@@ -28,8 +28,8 @@ It’s designed for mod developers and automated build systems that need current
 ### Examples
 
 ```bash
-curl https://echo-registry.vercel.app/api/versions/dependencies/1.21.1
-curl "https://echo-registry.vercel.app/api/versions/dependencies/1.21.1?projects=fabric-api,modmenu"
+curl https://echo.iamkaf.com/api/versions/dependencies/1.21.1
+curl "https://echo.iamkaf.com/api/versions/dependencies/1.21.1?projects=fabric-api,modmenu"
 ```
 
 

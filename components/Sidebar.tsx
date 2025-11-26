@@ -1,5 +1,6 @@
 import { MinecraftVersion, DependencyVersion } from '@/types/dependency';
 import GradleSnippet from './GradleSnippet';
+import ApiSnippet from './ApiSnippet';
 import ProjectConfig from './ProjectConfig';
 import VersionSelect from './VersionSelect';
 
@@ -10,6 +11,7 @@ interface SidebarProps {
   onRefresh: () => void;
   loading: boolean;
   dependencies: DependencyVersion[];
+  projects: string[];
 }
 
 export default function Sidebar({
@@ -19,6 +21,7 @@ export default function Sidebar({
   onRefresh,
   loading,
   dependencies,
+  projects,
 }: SidebarProps) {
   return (
     <div className="w-full lg:w-80 space-y-6 lg:shrink-0">
@@ -120,6 +123,11 @@ export default function Sidebar({
       {/* Gradle Properties Snippet */}
       {!loading && dependencies.length > 0 && (
         <GradleSnippet dependencies={dependencies} mcVersion={selectedVersion} />
+      )}
+
+      {/* API Request Snippet */}
+      {!loading && dependencies.length > 0 && (
+        <ApiSnippet mcVersion={selectedVersion} projects={projects} />
       )}
     </div>
   );

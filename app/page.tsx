@@ -122,6 +122,7 @@ export default function Home() {
               onRefresh={handleRefresh}
               loading={loading}
               dependencies={dependencies}
+              projects={projects}
             />
           </div>
 

@@ -14,7 +14,10 @@ const parserOptions = {
 export const xmlParser = new XMLParser(parserOptions);
 
 // Parse Maven metadata XML to extract versions
-export function parseMavenMetadata(xmlContent: string): { versions: string[]; latest?: string } {
+export function parseMavenMetadata(xmlContent: string): {
+  versions: string[];
+  latest?: string;
+} {
   try {
     const parsed = xmlParser.parse(xmlContent);
     const metadata = parsed.metadata || parsed;

@@ -5,6 +5,11 @@ export interface DependencyVersion {
   version: string | null;
   mc_version: string;
   source_url: string;
+  download_urls?: {
+    forge?: string | null;
+    neoforge?: string | null;
+    fabric?: string | null;
+  };
   notes?: string;
   fallback_used?: boolean;
   cached_at?: string;
@@ -48,6 +53,7 @@ export interface DependencyCacheRow {
   version: string;
   loader: string;
   source_url: string;
+  download_urls?: Record<string, string | null> | null;
   notes?: string;
   fallback_used: boolean;
   expires_at: string;

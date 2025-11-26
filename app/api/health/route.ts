@@ -42,7 +42,9 @@ export async function GET() {
     );
 
     // Determine overall health status
-    const errorCount = Object.values(healthResponse.external_apis).filter((status) => status === 'error').length;
+    const errorCount = Object.values(healthResponse.external_apis).filter(
+      (status) => status === 'error',
+    ).length;
 
     if (errorCount > 3) {
       healthResponse.status = 'degraded';

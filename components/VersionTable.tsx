@@ -53,11 +53,15 @@ export default function VersionTable({ dependencies }: VersionTableProps) {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Version
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loader</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Loader
+              </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
                 Notes
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Source
+              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -71,7 +75,9 @@ export default function VersionTable({ dependencies }: VersionTableProps) {
                   <div className={`text-sm ${getStatusColor(dependency.version)}`}>
                     {formatVersion(dependency.version)}
                   </div>
-                  {dependency.fallback_used && <div className="text-xs text-yellow-600 mt-1">⚠️ Fallback used</div>}
+                  {dependency.fallback_used && (
+                    <div className="text-xs text-yellow-600 mt-1">⚠️ Fallback used</div>
+                  )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
@@ -131,14 +137,18 @@ export default function VersionTable({ dependencies }: VersionTableProps) {
                   <div className={`text-sm font-medium ${getStatusColor(dependency.version)}`}>
                     {formatVersion(dependency.version)}
                   </div>
-                  {dependency.fallback_used && <div className="text-xs text-yellow-600">⚠️ Fallback used</div>}
+                  {dependency.fallback_used && (
+                    <div className="text-xs text-yellow-600">⚠️ Fallback used</div>
+                  )}
                 </div>
               </div>
 
               {dependency.notes && (
                 <div className="flex items-start justify-between">
                   <span className="text-xs text-gray-500">Notes:</span>
-                  <div className="text-sm text-gray-900 text-right max-w-[60%]">{dependency.notes}</div>
+                  <div className="text-sm text-gray-900 text-right max-w-[60%]">
+                    {dependency.notes}
+                  </div>
                 </div>
               )}
 

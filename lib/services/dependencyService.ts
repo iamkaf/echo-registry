@@ -9,6 +9,26 @@ import {
 import { parseMavenMetadata, extractVersionTags, findTagContent } from '../utils/xmlParser';
 import { CacheService } from './cacheService';
 
+// Types for Modrinth API responses
+interface ModrinthFile {
+  hashes: {
+    sha1: string;
+    sha512: string;
+  };
+  url: string;
+  filename: string;
+  primary: boolean;
+  size: number;
+  file_type: string | null;
+}
+
+interface ModrinthVersion {
+  version_number: string;
+  date_published: string;
+  loaders: string[];
+  files: ModrinthFile[];
+}
+
 export class DependencyService {
   private cacheService: CacheService;
 
@@ -175,7 +195,10 @@ export class DependencyService {
   }
 
   // Fetch Modrinth project version using JSON API
-  private async fetchModrinthProject(projectSlug: string, mcVersion: string): Promise<DependencyVersion> {
+  private async fetchModrinthProject(
+    projectSlug: string,
+    mcVersion: string,
+  ): Promise<DependencyVersion> {
     const versionJson = JSON.stringify([mcVersion]);
     const encodedVersions = encodeURIComponent(versionJson);
     const url = `${API_URLS.MODRINTH_API}/${projectSlug}/version?game_versions=${encodedVersions}`;
@@ -191,12 +214,13 @@ export class DependencyService {
       throw new Error(`No ${projectSlug} versions available`);
     }
 
-    // Get the most recent version by date_published
+    // Extract download URLs by finding the latest version for each loader
+    const downloadUrls = this.extractLatestDownloadsByLoader(versions);
+
+    // For version display, use the most recent version overall
     const latest = versions.reduce((prev, current) =>
       new Date(current.date_published) > new Date(prev.date_published) ? current : prev,
     );
-
-    console.log(latest.version_number);
 
     return {
       name: projectSlug,
@@ -204,8 +228,90 @@ export class DependencyService {
       version: latest.version_number,
       mc_version: mcVersion,
       source_url: `https://modrinth.com/mod/${projectSlug}`,
+      download_urls: downloadUrls,
       fallback_used: false,
     };
+  }
+
+  // Extract the latest download URL for each loader from multiple versions
+  private extractLatestDownloadsByLoader(
+    versions: ModrinthVersion[],
+  ): Record<string, string | null> {
+    const downloads: Record<string, string | null> = {
+      forge: null,
+      neoforge: null,
+      fabric: null,
+    };
+
+    // Group versions by loader and find the most recent one for each
+    const loaderVersions: Record<string, ModrinthVersion[]> = {
+      forge: [],
+      neoforge: [],
+      fabric: [],
+    };
+
+    // Group versions by their supported loaders
+    versions.forEach((version: ModrinthVersion) => {
+      if (!version.loaders || !Array.isArray(version.loaders)) return;
+
+      version.loaders.forEach((loader: string) => {
+        if (loader === 'forge' || loader === 'neoforge' || loader === 'fabric') {
+          loaderVersions[loader].push(version);
+        }
+      });
+    });
+
+    // For each loader, find the most recent version and extract its download URL
+    (Object.keys(loaderVersions) as Array<keyof typeof loaderVersions>).forEach((loader) => {
+      const loaderVersionsList = loaderVersions[loader];
+
+      if (loaderVersionsList.length === 0) {
+        downloads[loader] = null;
+        return;
+      }
+
+      // Find the most recent version for this loader
+      const latestVersion = loaderVersionsList.reduce(
+        (prev: ModrinthVersion, current: ModrinthVersion) =>
+          new Date(current.date_published) > new Date(prev.date_published) ? current : prev,
+      );
+
+      // Extract download URL from this version
+      const downloadUrl = this.extractSingleLoaderDownload(latestVersion, loader);
+      downloads[loader] = downloadUrl;
+    });
+
+    return downloads;
+  }
+
+  // Extract download URL for a specific loader from a version
+  private extractSingleLoaderDownload(
+    version: ModrinthVersion,
+    targetLoader: string,
+  ): string | null {
+    if (!version.files || !Array.isArray(version.files)) {
+      return null;
+    }
+
+    // Try to find a file specifically for this loader
+    for (const file of version.files) {
+      if (!file.filename || !file.url) continue;
+
+      const filename = file.filename.toLowerCase();
+
+      // Priority-based matching
+      if (
+        (targetLoader === 'fabric' && filename.includes('fabric')) ||
+        (targetLoader === 'neoforge' && filename.includes('neoforge')) ||
+        (targetLoader === 'forge' && filename.includes('forge') && !filename.includes('neoforge'))
+      ) {
+        return file.url;
+      }
+    }
+
+    // Fallback: use the primary file or first file if no specific match found
+    const primaryFile = version.files.find((f: ModrinthFile) => f.primary) || version.files[0];
+    return primaryFile ? primaryFile.url : null;
   }
 
   // Fetch NeoForm version from Maven metadata
@@ -263,7 +369,9 @@ export class DependencyService {
     // Check if the <latest> tag contains a different value
     const latestTag = findTagContent(content, 'latest');
     if (latestTag && latestTag.startsWith('2.') && latestVersion.startsWith('6.')) {
-      console.warn(`ForgeGradle <latest> tag contains '${latestTag}' but latest version is '${latestVersion}'`);
+      console.warn(
+        `ForgeGradle <latest> tag contains '${latestTag}' but latest version is '${latestVersion}'`,
+      );
     }
 
     return {
@@ -337,7 +445,9 @@ export class DependencyService {
           version,
           mc_version: currentVersion,
           source_url: `https://maven.parchmentmc.org/org/parchmentmc/data/parchment-${currentVersion}/`,
-          notes: fallbackUsed ? `Using Parchment mappings for ${currentVersion} (forwards compatible)` : undefined,
+          notes: fallbackUsed
+            ? `Using Parchment mappings for ${currentVersion} (forwards compatible)`
+            : undefined,
           fallback_used: fallbackUsed,
         };
       } catch (error) {
@@ -351,7 +461,10 @@ export class DependencyService {
   }
 
   // Fetch all dependencies for a Minecraft version
-  async fetchAllDependencies(mcVersion: string, customProjects: string[] = []): Promise<DependencyVersion[]> {
+  async fetchAllDependencies(
+    mcVersion: string,
+    customProjects: string[] = [],
+  ): Promise<DependencyVersion[]> {
     const allDependencyNames = [
       'forge',
       'neoforge',
@@ -364,10 +477,15 @@ export class DependencyService {
     ];
 
     // Fetch all dependencies in parallel
-    const results = await Promise.allSettled(allDependencyNames.map((name) => this.fetchDependency(name, mcVersion)));
+    const results = await Promise.allSettled(
+      allDependencyNames.map((name) => this.fetchDependency(name, mcVersion)),
+    );
 
     return results
-      .filter((result): result is PromiseFulfilledResult<DependencyVersion> => result.status === 'fulfilled')
+      .filter(
+        (result): result is PromiseFulfilledResult<DependencyVersion> =>
+          result.status === 'fulfilled',
+      )
       .map((result) => result.value);
   }
 

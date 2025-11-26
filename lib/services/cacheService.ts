@@ -25,6 +25,7 @@ export class CacheService {
         version: data.version,
         mc_version: data.mc_version,
         source_url: data.source_url,
+        download_urls: data.download_urls || undefined,
         notes: data.notes,
         fallback_used: data.fallback_used,
         cached_at: data.created_at,
@@ -49,6 +50,7 @@ export class CacheService {
         version: version.version,
         loader: version.loader,
         source_url: version.source_url,
+        download_urls: version.download_urls || null,
         notes: version.notes,
         fallback_used: version.fallback_used || false,
         expires_at: expiresAt.toISOString(),
@@ -142,20 +144,21 @@ export class CacheService {
     }
 
     try {
-      const [{ count: dependencyCount }, { count: minecraftCount }, { count: expiredCount }] = await Promise.all([
-        supabase
-          .from('dependency_cache')
-          .select('*', { count: 'exact', head: true })
-          .gt('expires_at', new Date().toISOString()),
-        supabase
-          .from('minecraft_versions')
-          .select('*', { count: 'exact', head: true })
-          .gt('expires_at', new Date().toISOString()),
-        supabase
-          .from('dependency_cache')
-          .select('*', { count: 'exact', head: true })
-          .lt('expires_at', new Date().toISOString()),
-      ]);
+      const [{ count: dependencyCount }, { count: minecraftCount }, { count: expiredCount }] =
+        await Promise.all([
+          supabase
+            .from('dependency_cache')
+            .select('*', { count: 'exact', head: true })
+            .gt('expires_at', new Date().toISOString()),
+          supabase
+            .from('minecraft_versions')
+            .select('*', { count: 'exact', head: true })
+            .gt('expires_at', new Date().toISOString()),
+          supabase
+            .from('dependency_cache')
+            .select('*', { count: 'exact', head: true })
+            .lt('expires_at', new Date().toISOString()),
+        ]);
 
       return {
         dependency_cache_count: dependencyCount || 0,

@@ -23,15 +23,35 @@ export default function VersionSelect({
     const id = version.id.toLowerCase();
 
     if (id.includes('-pre')) {
-      return { type: 'pre-release', label: 'Pre-Release', color: 'text-orange-600', bg: 'bg-orange-50' };
+      return {
+        type: 'pre-release',
+        label: 'Pre-Release',
+        color: 'text-orange-600',
+        bg: 'bg-orange-50',
+      };
     }
     if (id.includes('-rc')) {
-      return { type: 'release-candidate', label: 'RC', color: 'text-purple-600', bg: 'bg-purple-50' };
+      return {
+        type: 'release-candidate',
+        label: 'RC',
+        color: 'text-purple-600',
+        bg: 'bg-purple-50',
+      };
     }
     if (version.version_type === 'snapshot') {
-      return { type: 'snapshot', label: 'Snapshot', color: 'text-blue-600', bg: 'bg-blue-50' };
+      return {
+        type: 'snapshot',
+        label: 'Snapshot',
+        color: 'text-blue-600',
+        bg: 'bg-blue-50',
+      };
     }
-    return { type: 'release', label: 'Release', color: 'text-green-600', bg: 'bg-green-50' };
+    return {
+      type: 'release',
+      label: 'Release',
+      color: 'text-green-600',
+      bg: 'bg-green-50',
+    };
   };
 
   // Filter and sort versions
@@ -58,7 +78,9 @@ export default function VersionSelect({
       .sort((a, b) => new Date(b.release_time).getTime() - new Date(a.release_time).getTime())[0];
 
     // Filter out the latest versions from the main list
-    const otherVersions = filtered.filter((v) => v.id !== latestRelease?.id && v.id !== latestSnapshot?.id);
+    const otherVersions = filtered.filter(
+      (v) => v.id !== latestRelease?.id && v.id !== latestSnapshot?.id,
+    );
 
     // Sort other versions: releases first, then by release time (newest first)
     const sortedOthers = otherVersions.sort((a, b) => {
@@ -96,7 +118,9 @@ export default function VersionSelect({
           <div className="flex items-center gap-2">
             <span className="text-gray-900">{selectedVersion}</span>
             {selectedInfo && (
-              <span className={`text-xs px-1.5 py-0.5 rounded-full ${selectedInfo.bg} ${selectedInfo.color}`}>
+              <span
+                className={`text-xs px-1.5 py-0.5 rounded-full ${selectedInfo.bg} ${selectedInfo.color}`}
+              >
                 {selectedInfo.label}
               </span>
             )}
@@ -143,8 +167,10 @@ export default function VersionSelect({
                 filteredVersions.map((version) => {
                   const info = getVersionInfo(version);
                   const isSelected = version.id === selectedVersion;
-                  const isLatestRelease = (version as { isLatestRelease?: boolean }).isLatestRelease;
-                  const isLatestSnapshot = (version as { isLatestSnapshot?: boolean }).isLatestSnapshot;
+                  const isLatestRelease = (version as { isLatestRelease?: boolean })
+                    .isLatestRelease;
+                  const isLatestSnapshot = (version as { isLatestSnapshot?: boolean })
+                    .isLatestSnapshot;
 
                   return (
                     <button
@@ -173,7 +199,9 @@ export default function VersionSelect({
                         )}
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`text-xs px-1.5 py-0.5 rounded-full ${info.bg} ${info.color}`}>
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded-full ${info.bg} ${info.color}`}
+                        >
                           {info.label}
                         </span>
                         <span className="text-xs text-gray-500">

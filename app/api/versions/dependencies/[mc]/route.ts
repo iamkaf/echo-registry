@@ -57,7 +57,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     const dependencyService = new DependencyService();
-    const dependencies = await dependencyService.fetchAllDependencies(body.mc_version, body.dependencies || []);
+    const dependencies = await dependencyService.fetchAllDependencies(
+      body.mc_version,
+      body.dependencies || [],
+    );
 
     const response: ApiResponse<{
       mc_version: string;

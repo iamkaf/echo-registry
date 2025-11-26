@@ -19,7 +19,9 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-  const [projects] = useLocalStorage<string[]>('echo-registry-projects', [...POPULAR_MODRINTH_PROJECTS]);
+  const [projects] = useLocalStorage<string[]>('echo-registry-projects', [
+    ...POPULAR_MODRINTH_PROJECTS,
+  ]);
   const isInitialLoad = useRef(true);
 
   const fetchMinecraftVersions = async () => {
@@ -44,7 +46,9 @@ export default function Home() {
 
       try {
         const projectsQuery = projects.join(',');
-        const response = await fetch(`/api/versions/dependencies/${mcVersion}?projects=${projectsQuery}`);
+        const response = await fetch(
+          `/api/versions/dependencies/${mcVersion}?projects=${projectsQuery}`,
+        );
         const data = await response.json();
 
         if (data.error) {
@@ -99,9 +103,12 @@ export default function Home() {
     <main className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 lg:py-8">
         <header className="text-center mb-6 lg:mb-8">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Echo Registry</h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+            Echo Registry
+          </h1>
           <p className="text-sm sm:text-base lg:text-lg text-gray-600 px-2">
-            Where dependency versions resonate - Latest Forge, NeoForge, Fabric, and popular mod versions
+            Where dependency versions resonate - Latest Forge, NeoForge, Fabric, and popular mod
+            versions
           </p>
         </header>
 

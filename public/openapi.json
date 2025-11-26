@@ -105,7 +105,7 @@
         }
       }
     },
-      "/api/cleanup": {
+    "/api/cleanup": {
       "post": {
         "summary": "Clean up expired cache entries",
         "description": "Remove expired entries from the cache (for cron jobs)",
@@ -172,6 +172,27 @@
           "source_url": {
             "type": "string",
             "description": "Source URL for version information"
+          },
+          "download_urls": {
+            "type": "object",
+            "description": "Download URLs by mod loader (for Modrinth projects)",
+            "properties": {
+              "forge": {
+                "type": ["string", "null"],
+                "format": "uri",
+                "description": "Download URL for Forge version"
+              },
+              "neoforge": {
+                "type": ["string", "null"],
+                "format": "uri",
+                "description": "Download URL for NeoForge version"
+              },
+              "fabric": {
+                "type": ["string", "null"],
+                "format": "uri",
+                "description": "Download URL for Fabric version"
+              }
+            }
           },
           "notes": {
             "type": "string",
@@ -282,7 +303,7 @@
           }
         ]
       },
-        "MinecraftVersionsResponse": {
+      "MinecraftVersionsResponse": {
         "allOf": [
           {
             "$ref": "#/components/schemas/ApiResponse"

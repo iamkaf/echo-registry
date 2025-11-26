@@ -2,12 +2,10 @@
 
 Echo Registry provides the latest versions of Forge, NeoForge, Fabric, and popular Minecraft mods through a simple REST API and web interface.
 
-
 ## Overview
 
 The service exposes up-to-date version data for core mod loaders, popular mods, and development tools.
 It’s designed for mod developers and automated build systems that need current dependency versions.
-
 
 ## Supported Dependencies
 
@@ -15,15 +13,14 @@ It’s designed for mod developers and automated build systems that need current
 **Mods/APIs** – Fabric API, Mod Menu, REI, JEI, Architectury API, Amber, Forge Config API Port
 **Dev Tools** – Parchment Mappings, NeoForm, ForgeGradle, ModDev Gradle
 
-
 ## API
 
 ### Endpoints
 
-* `GET /api/health` – Service health
-* `GET /api/versions/minecraft` – All supported Minecraft versions
-* `GET /api/versions/dependencies/{mcVersion}` – Dependencies for a given Minecraft version
-* `POST /api/versions/dependencies/{mcVersion}` – Bulk dependency lookup
+- `GET /api/health` – Service health
+- `GET /api/versions/minecraft` – All supported Minecraft versions
+- `GET /api/versions/dependencies/{mcVersion}` – Dependencies for a given Minecraft version
+- `POST /api/versions/dependencies/{mcVersion}` – Bulk dependency lookup
 
 ### Examples
 
@@ -32,14 +29,13 @@ curl https://echo.iamkaf.com/api/versions/dependencies/1.21.1
 curl "https://echo.iamkaf.com/api/versions/dependencies/1.21.1?projects=fabric-api,modmenu"
 ```
 
-
 ## Development
 
 ### Requirements
 
-* Node.js 22+
-* npm
-* Supabase account
+- Node.js 22+
+- npm
+- Supabase account
 
 ### Setup
 
@@ -56,8 +52,8 @@ npm install
    ```bash
    npm run dev
    ```
-4. Visit [http://localhost:3000](http://localhost:3000)
 
+4. Visit [http://localhost:3000](http://localhost:3000)
 
 ## Environment Variables
 
@@ -71,7 +67,6 @@ HTTP_TIMEOUT=30000
 USER_AGENT=EchoRegistry/1.0
 ```
 
-
 ## Deployment
 
 Deploy to Vercel:
@@ -83,7 +78,6 @@ npx vercel --prod
 
 Add your Supabase credentials in the Vercel dashboard.
 A cron job removes expired cache entries every six hours (`CRON_SECRET` required).
-
 
 ## License
 

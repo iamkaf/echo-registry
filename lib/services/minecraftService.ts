@@ -49,7 +49,9 @@ export class MinecraftService {
       if (releases.length === 0) return null;
 
       // Sort by release time and get the latest
-      return releases.sort((a, b) => new Date(b.release_time).getTime() - new Date(a.release_time).getTime())[0].id;
+      return releases.sort(
+        (a, b) => new Date(b.release_time).getTime() - new Date(a.release_time).getTime(),
+      )[0].id;
     } catch (error) {
       console.error('Failed to get latest release:', error);
       return null;
@@ -65,7 +67,9 @@ export class MinecraftService {
       if (snapshots.length === 0) return null;
 
       // Sort by release time and get the latest
-      return snapshots.sort((a, b) => new Date(b.release_time).getTime() - new Date(a.release_time).getTime())[0].id;
+      return snapshots.sort(
+        (a, b) => new Date(b.release_time).getTime() - new Date(a.release_time).getTime(),
+      )[0].id;
     } catch (error) {
       console.error('Failed to get latest snapshot:', error);
       return null;
@@ -73,7 +77,9 @@ export class MinecraftService {
   }
 
   // Get versions by type
-  async getVersionsByType(type: 'release' | 'snapshot' | 'old_beta' | 'old_alpha'): Promise<MinecraftVersion[]> {
+  async getVersionsByType(
+    type: 'release' | 'snapshot' | 'old_beta' | 'old_alpha',
+  ): Promise<MinecraftVersion[]> {
     try {
       const versions = await this.fetchMinecraftVersions();
       return versions.filter((v) => v.version_type === type);

@@ -11,19 +11,29 @@ export const USER_AGENT = 'EchoRegistry/1.0';
 // External API URLs
 export const API_URLS = {
   FORGE_BASE: 'https://files.minecraftforge.net/net/minecraftforge/forge',
-  NEOFORGE_METADATA: 'https://maven.neoforged.net/releases/net/neoforged/neoforge/maven-metadata.xml',
+  NEOFORGE_METADATA:
+    'https://maven.neoforged.net/releases/net/neoforged/neoforge/maven-metadata.xml',
   FABRIC_LOADER: 'https://meta.fabricmc.net/v2/versions/loader',
   MODRINTH_API: 'https://api.modrinth.com/v2/project',
-  PARCHMENT_BASE: 'https://maven.parchmentmc.org/org/parchmentmc/data/parchment-{version}/maven-metadata.xml',
+  PARCHMENT_BASE:
+    'https://maven.parchmentmc.org/org/parchmentmc/data/parchment-{version}/maven-metadata.xml',
   NEOFORM_METADATA: 'https://maven.neoforged.net/releases/net/neoforged/neoform/maven-metadata.xml',
-  FORGEGRADLE_METADATA: 'https://maven.minecraftforge.net/net/minecraftforge/gradle/ForgeGradle/maven-metadata.xml',
-  MODDEV_GRADLE_METADATA: 'https://maven.neoforged.net/releases/net/neoforged/moddev-gradle/maven-metadata.xml',
+  FORGEGRADLE_METADATA:
+    'https://maven.minecraftforge.net/net/minecraftforge/gradle/ForgeGradle/maven-metadata.xml',
+  MODDEV_GRADLE_METADATA:
+    'https://maven.neoforged.net/releases/net/neoforged/moddev-gradle/maven-metadata.xml',
   MINECRAFT_MANIFEST: 'https://piston-meta.mojang.com/mc/game/version_manifest_v2.json',
 } as const;
 
-
 // Popular Modrinth projects (pre-configured)
-export const POPULAR_MODRINTH_PROJECTS = ['amber', 'fabric-api', 'modmenu', 'rei', 'architectury-api', 'forge-config-api-port'] as const;
+export const POPULAR_MODRINTH_PROJECTS = [
+  'amber',
+  'fabric-api',
+  'modmenu',
+  'rei',
+  'architectury-api',
+  'forge-config-api-port',
+] as const;
 
 // Minimum compatible versions for each dependency
 export const MINIMUM_COMPATIBLE_VERSIONS: Record<string, string> = {

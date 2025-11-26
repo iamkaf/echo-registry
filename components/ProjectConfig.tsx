@@ -38,7 +38,10 @@ export default function ProjectConfig() {
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 lg:p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-medium text-gray-900">Projects</h3>
-        <button onClick={() => setIsExpanded(!isExpanded)} className="text-xs text-gray-500 hover:text-gray-700">
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="text-xs text-gray-500 hover:text-gray-700"
+        >
           {isExpanded ? 'Hide' : 'Show'} ({projects.length})
         </button>
       </div>

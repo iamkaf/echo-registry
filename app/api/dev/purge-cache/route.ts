@@ -3,7 +3,10 @@ import { NextResponse } from 'next/server';
 export async function POST() {
   // Only allow in development
   if (process.env.NODE_ENV !== 'development') {
-    return NextResponse.json({ error: 'This endpoint is only available in development mode' }, { status: 403 });
+    return NextResponse.json(
+      { error: 'This endpoint is only available in development mode' },
+      { status: 403 },
+    );
   }
 
   try {
@@ -26,7 +29,10 @@ export async function POST() {
   } catch (error) {
     console.error('Error purging cache:', error);
     return NextResponse.json(
-      { error: 'Failed to purge cache', details: error instanceof Error ? error.message : 'Unknown error' },
+      {
+        error: 'Failed to purge cache',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
       { status: 500 },
     );
   }

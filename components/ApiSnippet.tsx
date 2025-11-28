@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { APP_CONFIG } from '@/lib/utils/constants';
 
 interface ApiSnippetProps {
   mcVersion: string;
@@ -23,13 +24,13 @@ export default function ApiSnippet({ mcVersion, projects }: ApiSnippetProps) {
 
   const generateCurlSnippet = () => {
     const url = generateApiUrl();
-    return `curl -s "https://echo.iamkaf.com${url}" | jq '.'`;
+    return `curl -s "${APP_CONFIG.API_BASE_URL}${url}" | jq '.'`;
   };
 
   const generateFetchSnippet = () => {
     const url = generateApiUrl();
     return `// JavaScript/TypeScript
-const response = await fetch(\`https://echo.iamkaf.com${url}\`);
+const response = await fetch(\`${APP_CONFIG.API_BASE_URL}${url}\`);
 const data = await response.json();
 console.log(data);`;
   };
@@ -39,7 +40,7 @@ console.log(data);`;
     return `// JavaScript with Axios
 import axios from 'axios';
 
-const response = await axios.get(\`https://echo.iamkaf.com${url}\`);
+const response = await axios.get(\`${APP_CONFIG.API_BASE_URL}${url}\`);
 console.log(response.data);`;
   };
 
@@ -48,7 +49,7 @@ console.log(response.data);`;
     return `// Rust with Reqwest
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let response = reqwest::get("https://echo.iamkaf.com${url}")
+    let response = reqwest::get("${APP_CONFIG.API_BASE_URL}${url}")
         .await?
         .text();
     println!("{}", response);
@@ -61,7 +62,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     return `# Python with Requests
 import requests
 
-response = requests.get("https://echo.iamkaf.com${url}")
+response = requests.get("${APP_CONFIG.API_BASE_URL}${url}")
 data = response.json()
 print(data)`;
   };
@@ -78,7 +79,7 @@ public class EchoRegistryClient {
     public static void main(String[] args) throws Exception {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://echo.iamkaf.com${url}"))
+                .uri(URI.create("${APP_CONFIG.API_BASE_URL}${url}"))
                 .GET()
                 .build();
 
@@ -191,7 +192,7 @@ public class EchoRegistryClient {
           <div className="flex items-center justify-between">
             <span>Endpoint: <code className="text-gray-400">{generateApiUrl()}</code></span>
             <a
-              href={`https://echo.iamkaf.com/openapi.json`}
+              href={`${APP_CONFIG.API_BASE_URL}/openapi.json`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-400 hover:text-blue-300 underline"

@@ -1,4 +1,4 @@
-import { MINIMUM_COMPATIBLE_VERSIONS } from './constants';
+import { MINIMUM_COMPATIBLE_VERSIONS, VERSION_UTILS } from './constants';
 
 // Parse Minecraft version into components (major, minor, patch)
 export function parseMcVersion(version: string): [number, number, number] {
@@ -83,10 +83,10 @@ export function generateParchmentFallbackVersions(mcVersion: string): string[] {
     versions.push(`${major}.${minor}.${p}`);
   }
 
-  // Try previous minor versions (up to 5 versions back)
-  for (let m = Math.max(0, minor - 5); m < minor; m++) {
+  // Try previous minor versions (up to MAX_PREVIOUS_MINOR_VERSIONS versions back)
+  for (let m = Math.max(0, minor - VERSION_UTILS.MAX_PREVIOUS_MINOR_VERSIONS); m < minor; m++) {
     // Try the latest patch versions for previous minors
-    for (let p = 10; p >= 0; p--) {
+    for (let p = VERSION_UTILS.MAX_PATCH_VERSIONS_PER_MINOR; p >= VERSION_UTILS.DEFAULT_PATCH_START; p--) {
       versions.push(`${major}.${m}.${p}`);
     }
   }

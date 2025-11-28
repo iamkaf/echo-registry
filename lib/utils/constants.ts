@@ -8,6 +8,24 @@ export const CACHE_TTL_MINECRAFT = 60 * 60 * 1000; // 1 hour
 export const HTTP_TIMEOUT = 30000; // 30 seconds
 export const USER_AGENT = 'EchoRegistry/1.0';
 
+// Version Utilities Configuration
+export const VERSION_UTILS = {
+  MAX_PREVIOUS_MINOR_VERSIONS: 5,
+  MAX_PATCH_VERSIONS_PER_MINOR: 10,
+  DEFAULT_PATCH_START: 0,
+} as const;
+
+// API Configuration
+export const API_CONSTANTS = {
+  HEALTH_CHECK_TIMEOUT: 5000, // 5 seconds
+  ERROR_THRESHOLD_COUNT: 3, // Number of API errors before degraded status
+} as const;
+
+// Application Configuration
+export const APP_CONFIG = {
+  API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://echo.iamkaf.com',
+} as const;
+
 // External API URLs
 export const API_URLS = {
   FORGE_BASE: 'https://files.minecraftforge.net/net/minecraftforge/forge',

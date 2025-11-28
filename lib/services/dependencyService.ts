@@ -1,5 +1,5 @@
 import { DependencyVersion } from '@/types/dependency';
-import { API_URLS, LOADER_MAPPING, HTTP_TIMEOUT, USER_AGENT } from '../utils/constants';
+import { API_URLS, LOADER_MAPPING } from '../utils/constants';
 import {
   isDependencyCompatible,
   extractMinorVersion,
@@ -8,6 +8,7 @@ import {
 } from '../utils/versionUtils';
 import { parseMavenMetadata, extractVersionTags, findTagContent } from '../utils/xmlParser';
 import { CacheService } from './cacheService';
+import { fetchWithTimeout } from '../utils/httpClient';
 
 // Types for Modrinth API responses
 interface ModrinthFile {
@@ -93,7 +94,7 @@ export class DependencyService {
   private async fetchForge(mcVersion: string): Promise<DependencyVersion> {
     const url = `${API_URLS.FORGE_BASE}/index_${mcVersion}.html`;
 
-    const response = await this.fetchWithTimeout(url);
+    const response = await fetchWithTimeout(url);
     if (!response.ok) {
       throw new Error(`Forge page not found for MC version ${mcVersion}`);
     }
@@ -135,7 +136,7 @@ export class DependencyService {
   private async fetchNeoForge(mcVersion: string): Promise<DependencyVersion> {
     const url = API_URLS.NEOFORGE_METADATA;
 
-    const response = await this.fetchWithTimeout(url);
+    const response = await fetchWithTimeout(url);
     if (!response.ok) {
       throw new Error('NeoForge metadata not available');
     }
@@ -168,26 +169,29 @@ export class DependencyService {
   private async fetchFabricLoader(mcVersion: string): Promise<DependencyVersion> {
     const url = `${API_URLS.FABRIC_LOADER}/${mcVersion}`;
 
-    const response = await this.fetchWithTimeout(url);
+    const response = await fetchWithTimeout(url);
     if (!response.ok) {
       throw new Error(`No Fabric loader found for MC version ${mcVersion}`);
     }
 
-    const loaders = await response.json();
+    const data = await response.json();
 
-    if (!Array.isArray(loaders) || loaders.length === 0) {
-      throw new Error('No Fabric loader found');
+    // Handle the response structure: it's an array of objects with loader properties
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new Error('No Fabric loader data found');
     }
 
-    // Get all versions and sort semantically
-    const versions = loaders.map((l) => l.loader.version);
-    const sortedVersions = sortVersionsSemantically(versions);
-    const version = sortedVersions[sortedVersions.length - 1];
+    // Get the first loader entry (they are sorted by version, newest first)
+    const loaderEntry = data[0];
+
+    if (!loaderEntry.loader || !loaderEntry.loader.version) {
+      throw new Error('Invalid Fabric loader response structure');
+    }
 
     return {
       name: 'fabric-loader',
       loader: 'fabric',
-      version,
+      version: loaderEntry.loader.version,
       mc_version: mcVersion,
       source_url: url,
       fallback_used: false,
@@ -203,7 +207,7 @@ export class DependencyService {
     const encodedVersions = encodeURIComponent(versionJson);
     const url = `${API_URLS.MODRINTH_API}/${projectSlug}/version?game_versions=${encodedVersions}`;
 
-    const response = await this.fetchWithTimeout(url);
+    const response = await fetchWithTimeout(url);
     if (!response.ok) {
       throw new Error(`No ${projectSlug} versions found for MC version ${mcVersion}`);
     }
@@ -324,7 +328,7 @@ export class DependencyService {
   private async fetchNeoForm(mcVersion: string): Promise<DependencyVersion> {
     const url = API_URLS.NEOFORM_METADATA;
 
-    const response = await this.fetchWithTimeout(url);
+    const response = await fetchWithTimeout(url);
     if (!response.ok) {
       throw new Error('Failed to fetch NeoForm maven metadata');
     }
@@ -355,7 +359,7 @@ export class DependencyService {
   private async fetchForgeGradle(mcVersion: string): Promise<DependencyVersion> {
     const url = API_URLS.FORGEGRADLE_METADATA;
 
-    const response = await this.fetchWithTimeout(url);
+    const response = await fetchWithTimeout(url);
     if (!response.ok) {
       throw new Error('Failed to fetch ForgeGradle maven metadata');
     }
@@ -395,7 +399,7 @@ export class DependencyService {
   private async fetchModDevGradle(mcVersion: string): Promise<DependencyVersion> {
     const url = API_URLS.MODDEV_GRADLE_METADATA;
 
-    const response = await this.fetchWithTimeout(url);
+    const response = await fetchWithTimeout(url);
     if (!response.ok) {
       throw new Error('Failed to fetch ModDev Gradle maven metadata');
     }
@@ -427,7 +431,7 @@ export class DependencyService {
       const url = API_URLS.PARCHMENT_BASE.replace('{version}', currentVersion);
 
       try {
-        const response = await this.fetchWithTimeout(url);
+        const response = await fetchWithTimeout(url);
         if (!response.ok) continue;
 
         const xml = await response.text();
@@ -599,25 +603,5 @@ export class DependencyService {
     };
 
     return minVersions[name] || 'Unknown';
-  }
-
-  // Helper method for HTTP requests with timeout
-  private async fetchWithTimeout(url: string): Promise<Response> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), HTTP_TIMEOUT);
-
-    try {
-      const response = await fetch(url, {
-        signal: controller.signal,
-        headers: {
-          'User-Agent': process.env.USER_AGENT || USER_AGENT,
-        },
-      });
-      clearTimeout(timeoutId);
-      return response;
-    } catch (error) {
-      clearTimeout(timeoutId);
-      throw error;
-    }
   }
 }

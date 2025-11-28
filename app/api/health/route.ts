@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
 import { HealthResponse } from '@/types/dependency';
 import { CacheService } from '@/lib/services/cacheService';
+import { API_CONSTANTS } from '@/lib/utils/constants';
+import { formatApiTimestamp } from '@/lib/utils/dateUtils';
 
 export async function GET() {
   // const startTime = Date.now(); // Commented out since logging is not implemented
   const healthResponse: HealthResponse = {
     status: 'ok',
-    timestamp: new Date().toISOString(),
+    timestamp: formatApiTimestamp(),
     cache_status: 'connected',
     external_apis: {},
   };
@@ -32,7 +34,7 @@ export async function GET() {
         try {
           const response = await fetch(url, {
             method: 'HEAD',
-            signal: AbortSignal.timeout(5000), // 5 second timeout
+            signal: AbortSignal.timeout(API_CONSTANTS.HEALTH_CHECK_TIMEOUT), // Configurable timeout
           });
           healthResponse.external_apis[name] = response.ok ? 'ok' : 'error';
         } catch {
@@ -46,7 +48,7 @@ export async function GET() {
       (status) => status === 'error',
     ).length;
 
-    if (errorCount > 3) {
+    if (errorCount > API_CONSTANTS.ERROR_THRESHOLD_COUNT) {
       healthResponse.status = 'degraded';
     }
     if (cacheHealth === 'disconnected' || cacheHealth === 'error') {

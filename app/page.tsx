@@ -1,104 +1,83 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { DependencyVersion, MinecraftVersion } from '@/types/dependency';
+import { useEffect } from 'react';
 import VersionTable from '@/components/VersionTable';
 import Sidebar from '@/components/Sidebar';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import SplashScreen from '@/components/SplashScreen';
 import ErrorMessage from '@/components/ErrorMessage';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { POPULAR_MODRINTH_PROJECTS } from '@/lib/utils/constants';
+import {
+  useDependencies,
+  useMinecraftVersions,
+  useSelectedVersion,
+  useProjects,
+  useLoading,
+  useError,
+  useAppReady,
+  useInitialLoadingComplete,
+  useSelectedVersionFromInitialization,
+  useIsAnyRequestLoading,
+  useLoadingContext,
+  useAppActions,
+} from '@/stores/useAppStore';
 
 // This ensures the page is always dynamically rendered
 export const dynamic = 'force-dynamic';
 
 export default function Home() {
-  const [dependencies, setDependencies] = useState<DependencyVersion[]>([]);
-  const [minecraftVersions, setMinecraftVersions] = useState<MinecraftVersion[]>([]);
-  const [selectedVersion, setSelectedVersion] = useState<string>('1.21.1'); // Initial fallback
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-  const [projects] = useLocalStorage<string[]>('echo-registry-projects', [
-    ...POPULAR_MODRINTH_PROJECTS,
-  ]);
-  const isInitialLoad = useRef(true);
+  // Get state from Zustand store
+  const dependencies = useDependencies();
+  const minecraftVersions = useMinecraftVersions();
+  const selectedVersion = useSelectedVersion();
+  const projects = useProjects();
+  const loading = useLoading();
+  const error = useError();
+  const appReady = useAppReady();
+  const initialLoadingComplete = useInitialLoadingComplete();
+  const selectedVersionFromInitialization = useSelectedVersionFromInitialization();
+  const isAnyRequestLoading = useIsAnyRequestLoading();
+  const loadingContext = useLoadingContext();
 
-  const fetchMinecraftVersions = async () => {
-    try {
-      const response = await fetch('/api/versions/minecraft');
-      const data = await response.json();
+  // Get actions from Zustand store
+  const {
+    fetchDependencies,
+    setSelectedVersion,
+    setSelectedVersionFromInitialization,
+    clearError,
+  } = useAppActions();
 
-      if (data.error) {
-        setError(data.error);
-      } else {
-        setMinecraftVersions(data.data.versions);
-      }
-    } catch {
-      setError('Failed to fetch Minecraft versions');
-    }
-  };
-
-  const fetchDependencies = useCallback(
-    async (mcVersion: string) => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const projectsQuery = projects.join(',');
-        const response = await fetch(
-          `/api/versions/dependencies/${mcVersion}?projects=${projectsQuery}`,
-        );
-        const data = await response.json();
-
-        if (data.error) {
-          setError(data.error);
-        } else {
-          setDependencies(data.data.dependencies);
-          setLastUpdated(data.cached_at);
-        }
-      } catch {
-        setError('Failed to fetch dependencies');
-      } finally {
-        setLoading(false);
-      }
-    },
-    [projects],
-  );
-
+  // Fetch dependencies when user changes versions (after initial load is complete)
   useEffect(() => {
-    fetchMinecraftVersions();
-  }, []);
-
-  // Set initial version to latest release when versions are loaded (only on initial load)
-  useEffect(() => {
-    if (minecraftVersions.length > 0 && isInitialLoad.current) {
-      const latestRelease = minecraftVersions
-        .filter((v) => v.version_type === 'release')
-        .sort((a, b) => new Date(b.release_time).getTime() - new Date(a.release_time).getTime())[0];
-
-      if (latestRelease) {
-        setSelectedVersion(latestRelease.id);
-        isInitialLoad.current = false;
-      }
-    }
-  }, [minecraftVersions]);
-
-  useEffect(() => {
-    if (selectedVersion) {
+    if (selectedVersion && initialLoadingComplete && !selectedVersionFromInitialization) {
       fetchDependencies(selectedVersion);
+      setSelectedVersionFromInitialization(false); // Reset flag
     }
-  }, [selectedVersion, projects, fetchDependencies]);
+  }, [selectedVersion, projects, initialLoadingComplete, selectedVersionFromInitialization, fetchDependencies, setSelectedVersionFromInitialization]);
 
   const handleRefresh = () => {
-    fetchDependencies(selectedVersion);
+    if (selectedVersion) {
+      clearError();
+      fetchDependencies(selectedVersion);
+    }
   };
 
   const handleVersionChange = (version: string) => {
+    if (isAnyRequestLoading) {
+      // Prevent version changes during ongoing requests
+      console.log('Please wait for current request to complete');
+      return;
+    }
+
+    setSelectedVersionFromInitialization(false); // Mark as user-initiated change
     setSelectedVersion(version);
-    isInitialLoad.current = false; // Mark that user has made a selection
+    clearError();
   };
 
+  // Show splash screen during initial loading
+  if (!appReady) {
+    return <SplashScreen />;
+  }
+
+  // Main app interface
   return (
     <main className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 lg:py-8">
@@ -116,10 +95,12 @@ export default function Home() {
           <div className="lg:w-80 lg:shrink-0">
             <Sidebar
               versions={minecraftVersions}
-              selectedVersion={selectedVersion}
+              selectedVersion={selectedVersion || ''}
               onVersionChange={handleVersionChange}
               onRefresh={handleRefresh}
               loading={loading}
+              isAnyRequestLoading={isAnyRequestLoading}
+              loadingContext={loadingContext}
               dependencies={dependencies}
               projects={projects}
             />
@@ -127,37 +108,9 @@ export default function Home() {
 
           {/* Main Content - Full width on mobile, takes remaining space on desktop */}
           <div className="flex-1 min-w-0">
-            {loading && <LoadingSpinner />}
-
             {error && <ErrorMessage message={error} onRetry={handleRefresh} />}
 
-            {!loading && !error && <VersionTable dependencies={dependencies} />}
-
-            {/* Footer */}
-            <footer className="mt-8 lg:mt-12 text-center text-gray-500 text-sm">
-              <p>
-                Data fetched from official sources.
-                {lastUpdated && ` Last updated: ${new Date(lastUpdated).toLocaleString()}`}
-              </p>
-              <p className="mt-2">
-                <a
-                  href="/api/health"
-                  className="text-blue-600 hover:underline mr-4"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  API Health
-                </a>
-                <a
-                  href="/openapi.json"
-                  className="text-blue-600 hover:underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  API Documentation
-                </a>
-              </p>
-            </footer>
+            {!error && <VersionTable dependencies={dependencies} isLoading={isAnyRequestLoading} />}
           </div>
         </div>
       </div>

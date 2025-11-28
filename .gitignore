@@ -39,4 +39,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-sudo add-apt-repository ppa:git-core/ppa
+
+.playwright-mcp

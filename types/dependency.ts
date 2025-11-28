@@ -31,12 +31,6 @@ export interface ApiResponse<T> {
   timestamp: string;
 }
 
-// Bulk request
-export interface BulkRequest {
-  mc_version: string;
-  dependencies?: string[];
-  include_core?: boolean;
-}
 
 // Health check response
 export interface HealthResponse {

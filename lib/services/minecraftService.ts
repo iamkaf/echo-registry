@@ -1,6 +1,7 @@
 import { MinecraftVersion } from '@/types/dependency';
-import { API_URLS, HTTP_TIMEOUT, USER_AGENT } from '../utils/constants';
+import { API_URLS } from '../utils/constants';
 import { CacheService } from './cacheService';
+import { fetchWithTimeout } from '../utils/httpClient';
 
 export class MinecraftService {
   private cacheService: CacheService;
@@ -16,7 +17,7 @@ export class MinecraftService {
     if (cached && cached.length > 0) return cached;
 
     try {
-      const response = await this.fetchWithTimeout(API_URLS.MINECRAFT_MANIFEST);
+      const response = await fetchWithTimeout(API_URLS.MINECRAFT_MANIFEST);
       if (!response.ok) {
         throw new Error('Failed to fetch Minecraft version manifest');
       }
@@ -137,26 +138,6 @@ export class MinecraftService {
     } catch (error) {
       console.error(`Failed to get version info for ${version}:`, error);
       return null;
-    }
-  }
-
-  // Helper method for HTTP requests with timeout
-  private async fetchWithTimeout(url: string): Promise<Response> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), HTTP_TIMEOUT);
-
-    try {
-      const response = await fetch(url, {
-        signal: controller.signal,
-        headers: {
-          'User-Agent': process.env.USER_AGENT || USER_AGENT,
-        },
-      });
-      clearTimeout(timeoutId);
-      return response;
-    } catch (error) {
-      clearTimeout(timeoutId);
-      throw error;
     }
   }
 }

@@ -28,10 +28,6 @@ Examples:
 
 The optional ?projects parameter lets you fetch specific mods instead of all available dependencies.
 
-### 4. Bulk Dependency Lookup
-POST /api/versions/dependencies/{mc_version}
-Request body: { "mc_version": "1.21.1", "dependencies": ["fabric-api", "modmenu"] }
-Useful when you need multiple specific dependencies in one request.
 
 ## What Dependencies Are Available:
 - Loaders: Forge, NeoForge, Fabric Loader

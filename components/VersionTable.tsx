@@ -1,10 +1,17 @@
 import { DependencyVersion } from '@/types/dependency';
+import VersionTableSkeleton from './VersionTableSkeleton';
 
 interface VersionTableProps {
   dependencies: DependencyVersion[];
+  isLoading?: boolean;
 }
 
-export default function VersionTable({ dependencies }: VersionTableProps) {
+export default function VersionTable({ dependencies, isLoading = false }: VersionTableProps) {
+  // Show skeleton when loading
+  if (isLoading) {
+    return <VersionTableSkeleton />;
+  }
+
   if (dependencies.length === 0) {
     return (
       <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">

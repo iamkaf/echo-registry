@@ -10,6 +10,7 @@ export interface DependencyVersion {
     neoforge?: string | null;
     fabric?: string | null;
   };
+  coordinates?: string | null;
   notes?: string;
   fallback_used?: boolean;
   cached_at?: string;
@@ -54,6 +55,7 @@ export interface DependencyCacheRow {
   loader: string;
   source_url: string;
   download_urls?: Record<string, string | null> | null;
+  coordinates?: string | null;
   notes?: string;
   fallback_used: boolean;
   expires_at: string;

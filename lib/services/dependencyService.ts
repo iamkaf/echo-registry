@@ -222,6 +222,11 @@ export class DependencyService {
       new Date(current.date_published) > new Date(prev.date_published) ? current : prev,
     );
 
+    // Generate maven coordinates if this is a Modrinth project
+    const coordinates = latest.version_number
+      ? `maven.modrinth:${projectSlug}:${latest.version_number}`
+      : null;
+
     return {
       name: projectSlug,
       loader: LOADER_MAPPING[projectSlug] || 'universal',
@@ -229,6 +234,7 @@ export class DependencyService {
       mc_version: mcVersion,
       source_url: `https://modrinth.com/mod/${projectSlug}`,
       download_urls: downloadUrls,
+      coordinates,
       fallback_used: false,
     };
   }
@@ -516,12 +522,17 @@ export class DependencyService {
       }
     };
 
+    // Set coordinates to null for Modrinth projects (since they failed to fetch)
+    const isModrinthProject = !['forge', 'neoforge', 'fabric-loader', 'parchment', 'neoform', 'forgegradle', 'moddev-gradle'].includes(name);
+    const coordinates = isModrinthProject ? null : undefined;
+
     return {
       name,
       loader,
       version: null,
       mc_version: mcVersion,
       source_url: getSourceUrl(name),
+      ...(isModrinthProject && { coordinates }),
       notes: `Failed to fetch: ${error}`,
       fallback_used: false,
     };
@@ -555,12 +566,16 @@ export class DependencyService {
       }
     };
 
+    // Set coordinates to null for Modrinth projects (since they're incompatible)
+    const isModrinthProject = !['forge', 'neoforge', 'fabric-loader', 'parchment', 'neoform', 'forgegradle', 'moddev-gradle'].includes(name);
+
     return {
       name,
       loader,
       version: 'N/A',
       mc_version: mcVersion,
       source_url: getSourceUrl(name),
+      ...(isModrinthProject && { coordinates: null }),
       notes: `Not available for Minecraft ${mcVersion}. Requires ${minVersion} or later.`,
       fallback_used: false,
     };

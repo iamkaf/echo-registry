@@ -1,0 +1,66 @@
+# Echo Registry API - Quick Start Guide for AI Agents
+# Get latest versions of Minecraft mod loaders and dependencies instantly
+
+## What this service does:
+Echo Registry provides up-to-date version data for Forge, NeoForge, Fabric, and popular Minecraft mods through a simple REST API. Perfect for automated build systems and dependency management.
+
+## Base URL: https://echo.iamkaf.com
+## OpenAPI Specification: https://echo.iamkaf.com/openapi.json
+
+## Available Endpoints:
+
+### 1. Health Check
+GET /api/health
+Returns service status and external API connectivity. Use this to verify the service is running.
+
+### 2. Get Supported Minecraft Versions
+GET /api/versions/minecraft
+Returns all supported Minecraft versions with their types (release, snapshot, etc.).
+
+### 3. Get Dependencies for Minecraft Version
+GET /api/versions/dependencies/{mc_version}
+This is the main endpoint you'll use.
+
+Examples:
+- GET /api/versions/dependencies/1.21.1
+- GET /api/versions/dependencies/1.20.6
+- GET /api/versions/dependencies/1.21.1?projects=fabric-api,modmenu
+
+The optional ?projects parameter lets you fetch specific mods instead of all available dependencies.
+
+### 4. Bulk Dependency Lookup
+POST /api/versions/dependencies/{mc_version}
+Request body: { "mc_version": "1.21.1", "dependencies": ["fabric-api", "modmenu"] }
+Useful when you need multiple specific dependencies in one request.
+
+## What Dependencies Are Available:
+- Loaders: Forge, NeoForge, Fabric Loader
+- Popular Mods: Fabric API, Mod Menu, REI, JEI, Architectury API, Amber, Forge Config API Port or any other mod hosted on Modrinth
+- Dev Tools: Parchment Mappings, NeoForm, ForgeGradle, ModDev Gradle
+
+## Response Format:
+All endpoints return JSON with this structure:
+{
+  "data": { ... },
+  "timestamp": "2025-01-XX...",
+  "cached_at": "2025-01-XX..."
+}
+
+For dependency endpoints, data includes:
+- mc_version: The Minecraft version
+- dependencies: Array of objects with name, version, loader, source_url, download_urls
+
+## Rate Limiting & Caching:
+- Responses are cached to reduce external API load
+- Check the "cached_at" timestamp in responses
+- Use health check endpoint to monitor service status
+
+## Error Handling:
+- 400: Bad request (invalid parameters)
+- 500: Server error (external service issues)
+- All errors include descriptive message and timestamp
+
+## Production Usage:
+Deployed at: https://echo.iamkaf.com
+The service runs on Vercel with automated cache cleanup daily at noon.
+Source code available on GitHub for reference or contributions.

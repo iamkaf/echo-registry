@@ -107,8 +107,7 @@ export default function Home() {
             Echo Registry
           </h1>
           <p className="text-sm sm:text-base lg:text-lg text-gray-600 px-2">
-            Where dependency versions resonate - Latest Forge, NeoForge, Fabric, and popular mod
-            versions
+            Latest Forge, NeoForge, Fabric, and popular mod versions for Minecraft
           </p>
         </header>
 

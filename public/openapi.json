@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Echo Registry API",
-    "description": "Where dependency versions resonate - Latest Forge, NeoForge, Fabric, and popular mod versions for Minecraft",
+    "description": "Latest Forge, NeoForge, Fabric, and popular mod versions for Minecraft",
     "version": "1.0.0",
     "contact": {
       "name": "Echo Registry"

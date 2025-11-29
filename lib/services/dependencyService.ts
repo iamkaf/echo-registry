@@ -651,6 +651,72 @@ export class DependencyService {
     };
   }
 
+  // Check loader availability for multiple projects and versions
+  async checkLoadersForProjects(
+    projects: string[],
+    mcVersions: string[],
+  ): Promise<Record<string, Record<string, string[]>>> {
+    const result: Record<string, Record<string, string[]>> = {};
+
+    // Initialize result structure with empty arrays
+    projects.forEach((project) => {
+      result[project] = {};
+      mcVersions.forEach((version) => {
+        result[project][version] = [];
+      });
+    });
+
+    // Process all project-version combinations in parallel
+    const promises: Promise<void>[] = [];
+
+    projects.forEach((project) => {
+      mcVersions.forEach((mcVersion) => {
+        promises.push(this.processProjectVersion(project, mcVersion, result));
+      });
+    });
+
+    // Wait for all processing to complete
+    await Promise.allSettled(promises);
+
+    return result;
+  }
+
+  // Process a single project-version combination
+  private async processProjectVersion(
+    project: string,
+    mcVersion: string,
+    result: Record<string, Record<string, string[]>>,
+  ): Promise<void> {
+    try {
+      const dependency = await this.fetchModrinthProject(project, mcVersion);
+      const loaders = this.extractLoadersFromDependency(dependency);
+      result[project][mcVersion] = loaders;
+    } catch (error) {
+      // Leave empty array for failed requests as per requirements
+      console.warn(`Failed to fetch loader data for ${project} on MC ${mcVersion}:`, error);
+      result[project][mcVersion] = [];
+    }
+  }
+
+  // Extract available loaders from dependency data
+  private extractLoadersFromDependency(dependency: DependencyVersion): string[] {
+    const loaders: string[] = [];
+
+    // Check download_urls for loader-specific files
+    if (dependency.download_urls) {
+      if (dependency.download_urls.forge) loaders.push('forge');
+      if (dependency.download_urls.neoforge) loaders.push('neoforge');
+      if (dependency.download_urls.fabric) loaders.push('fabric');
+    }
+
+    // Fallback: use loader field if no download_urls
+    if (loaders.length === 0 && dependency.loader !== 'universal') {
+      loaders.push(dependency.loader);
+    }
+
+    return loaders.sort(); // Sort for consistent response
+  }
+
   // Get minimum version for dependency (simplified version)
   private getMinimumVersion(name: string): string {
     const minVersions: Record<string, string> = {

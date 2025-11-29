@@ -31,6 +31,31 @@ export const ProjectsQuerySchema = z.object({
 });
 
 /**
+ * Query parameter validation for loaders check endpoint
+ * Accepts comma-separated project names and Minecraft versions
+ */
+export const LoadersCheckQuerySchema = z.object({
+  projects: z
+    .string()
+    .min(1, 'Projects parameter cannot be empty')
+    .transform((val) =>
+      val
+        .split(',')
+        .map((p) => p.trim())
+        .filter((p) => p.length > 0),
+    ),
+  versions: z
+    .string()
+    .min(1, 'Versions parameter cannot be empty')
+    .transform((val) =>
+      val
+        .split(',')
+        .map((v) => v.trim())
+        .filter((v) => v.length > 0),
+    ),
+});
+
+/**
  * Dependency version validation
  * Used to validate individual dependency responses
  */
@@ -93,6 +118,13 @@ export const DependenciesResponseSchema = ApiResponseSchema(
 );
 
 /**
+ * Success response schema for project compatibility endpoint
+ */
+export const ProjectCompatibilityResponseSchema = ApiResponseSchema(
+  z.record(z.string(), z.record(z.string(), z.array(z.enum(['forge', 'neoforge', 'fabric'])))),
+);
+
+/**
  * Success response schema for Minecraft versions endpoint
  */
 export const MinecraftVersionsResponseSchema = ApiResponseSchema(
@@ -137,6 +169,28 @@ export function validateMinecraftVersion(mcVersion: string): string {
 export function validateProjectsQuery(projects?: string): string[] {
   const result = ProjectsQuerySchema.safeParse({ projects });
   return result.success ? result.data.projects : [];
+}
+
+/**
+ * Validate project compatibility check query parameters
+ * Throws ValidationError if invalid
+ */
+export function validateProjectCompatibilityQuery(
+  projects: string,
+  versions: string,
+): {
+  projects: string[];
+  versions: string[];
+} {
+  const result = LoadersCheckQuerySchema.safeParse({ projects, versions });
+  if (!result.success) {
+    const errorMessage =
+      result.error.issues && result.error.issues.length > 0
+        ? result.error.issues[0]?.message
+        : 'Invalid query parameters';
+    throw new ValidationError(errorMessage);
+  }
+  return result.data;
 }
 
 /**

@@ -28,6 +28,32 @@ Examples:
 
 The optional ?projects parameter lets you fetch specific mods instead of all available dependencies.
 
+### 4. Check Project Compatibility
+GET /api/projects/compatibility?projects={projects}&versions={versions}
+Check which Modrinth projects are compatible with specific loaders across multiple Minecraft versions.
+
+Examples:
+- GET /api/projects/compatibility?projects=fabric-api&versions=1.21.1
+- GET /api/projects/compatibility?projects=fabric-api,amber,sodium&versions=1.20.1,1.21.1
+
+Parameters:
+- projects: Comma-separated Modrinth project slugs (required)
+- versions: Comma-separated Minecraft versions (required)
+
+Response format:
+{
+  "data": {
+    "fabric-api": {
+      "1.21.1": ["fabric"]
+    },
+    "amber": {
+      "1.20.1": ["forge", "neoforge", "fabric"],
+      "1.21.1": ["neoforge", "fabric"]
+    }
+  },
+  "timestamp": "2025-01-XX...",
+  "cached_at": "2025-01-XX..."
+}
 
 ## What Dependencies Are Available:
 - Loaders: Forge, NeoForge, Fabric Loader

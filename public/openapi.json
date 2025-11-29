@@ -105,6 +105,53 @@
         }
       }
     },
+    "/api/projects/compatibility": {
+      "get": {
+        "summary": "Check project compatibility across loaders",
+        "description": "Check which Modrinth projects are compatible with specific loaders across multiple Minecraft versions",
+        "tags": ["Projects"],
+        "parameters": [
+          {
+            "name": "projects",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated list of Modrinth project slugs",
+            "example": "fabric-api,amber,sodium"
+          },
+          {
+            "name": "versions",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated list of Minecraft versions",
+            "example": "1.20.1,1.21.1"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project compatibility data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectCompatibilityResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters"
+          },
+          "500": {
+            "description": "Failed to fetch project data"
+          }
+        }
+      }
+    },
     "/api/cleanup": {
       "post": {
         "summary": "Clean up expired cache entries",
@@ -326,6 +373,32 @@
           }
         ]
       },
+      "ProjectCompatibilityResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "description": "Nested mapping of projects to versions to loaders that support each project",
+                "additionalProperties": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": ["forge", "neoforge", "fabric"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
       "CacheStats": {
         "type": "object",
         "properties": {
@@ -361,6 +434,10 @@
     {
       "name": "Dependencies",
       "description": "Dependency version endpoints"
+    },
+    {
+      "name": "Projects",
+      "description": "Project compatibility endpoints"
     },
     {
       "name": "Admin",

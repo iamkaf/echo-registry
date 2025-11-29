@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Echo Registry API",
-    "description": "Latest Forge, NeoForge, Fabric, and popular mod versions for Minecraft",
-    "version": "1.0.0",
+    "description": "Latest Forge, NeoForge, Fabric, and popular mod versions for Minecraft. The compatibility endpoint now returns version information with loader-specific version strings.",
+    "version": "0.5.0",
     "contact": {
       "name": "Echo Registry"
     }
@@ -107,8 +107,8 @@
     },
     "/api/projects/compatibility": {
       "get": {
-        "summary": "Check project compatibility across loaders",
-        "description": "Check which Modrinth projects are compatible with specific loaders across multiple Minecraft versions",
+        "summary": "Check project compatibility with version information",
+        "description": "Check which projects are compatible with specific loaders across multiple Minecraft versions and returns version strings formatted as 'version+loader'",
         "tags": ["Projects"],
         "parameters": [
           {
@@ -134,11 +134,38 @@
         ],
         "responses": {
           "200": {
-            "description": "Project compatibility data",
+            "description": "Project compatibility data with version information",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProjectCompatibilityResponse"
+                },
+                "example": {
+                  "data": {
+                    "forge": {
+                      "1.21.1": {
+                        "forge": "52.1.0",
+                        "neoforge": null,
+                        "fabric": null
+                      }
+                    },
+                    "neoforge": {
+                      "1.21.1": {
+                        "forge": null,
+                        "neoforge": "21.10.63",
+                        "fabric": null
+                      }
+                    },
+                    "fabric-api": {
+                      "1.21.1": {
+                        "forge": null,
+                        "neoforge": null,
+                        "fabric": "0.116.7+1.21.1"
+                      }
+                    }
+                  },
+                  "success": true,
+                  "timestamp": "2025-11-29T12:00:00Z"
                 }
               }
             }
@@ -389,14 +416,18 @@
             "properties": {
               "data": {
                 "type": "object",
-                "description": "Nested mapping of projects to versions to loaders that support each project",
+                "description": "Nested mapping of projects to Minecraft versions to loader version strings",
                 "additionalProperties": {
                   "type": "object",
                   "additionalProperties": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "enum": ["forge", "neoforge", "fabric"]
+                    "type": "object",
+                    "description": "Mapping of loaders to version strings (original mod author format)",
+                    "additionalProperties": {
+                      "oneOf": [
+                        {"type": "string"},
+                        {"type": "null"}
+                      ],
+                      "description": "Version string as provided by mod authors, or null if unavailable (e.g., '20.1.0', '0.102.0', etc.)"
                     }
                   }
                 }

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DependencyVersion } from '@/types/dependency';
+import { DependencyVersion, VersionedProjectCompatibility } from '@/types/dependency';
 
 /**
  * Minecraft version parameter validation
@@ -120,10 +120,10 @@ export const DependenciesResponseSchema = ApiResponseSchema(
 );
 
 /**
- * Success response schema for project compatibility endpoint
+ * Success response schema for versioned project compatibility endpoint
  */
-export const ProjectCompatibilityResponseSchema = ApiResponseSchema(
-  z.record(z.string(), z.record(z.string(), z.array(z.enum(['forge', 'neoforge', 'fabric'])))),
+export const VersionedProjectCompatibilityResponseSchema = ApiResponseSchema(
+  z.record(z.string(), z.record(z.string(), z.record(z.string(), z.string().nullable()))) satisfies z.ZodType<VersionedProjectCompatibility>,
 );
 
 /**

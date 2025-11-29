@@ -10,6 +10,11 @@ export interface DependencyVersion {
     neoforge?: string | null;
     fabric?: string | null;
   };
+  loader_versions?: {
+    forge?: string | null;
+    neoforge?: string | null;
+    fabric?: string | null;
+  };
   coordinates?: string | null;
   notes?: string;
   fallback_used?: boolean;
@@ -21,6 +26,15 @@ export interface MinecraftVersion {
   id: string;
   version_type: 'release' | 'snapshot' | 'old_beta' | 'old_alpha';
   release_time: string;
+}
+
+// Versioned project compatibility response
+export interface VersionedProjectCompatibility {
+  [projectName: string]: {
+    [mcVersion: string]: {
+      [loader: string]: string | null; // version as provided by mod authors, or null if unavailable
+    };
+  };
 }
 
 // API response wrapper

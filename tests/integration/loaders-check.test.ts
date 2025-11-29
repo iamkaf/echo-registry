@@ -75,11 +75,16 @@ describe('Project Compatibility API Integration', () => {
       expect(data.data['amber']).toHaveProperty('1.21.1');
       expect(data.data['amber']).toHaveProperty('1.20.1');
 
-      // Verify loader arrays are present
-      expect(Array.isArray(data.data['fabric-api']['1.21.1'])).toBe(true);
-      expect(Array.isArray(data.data['fabric-api']['1.20.1'])).toBe(true);
-      expect(Array.isArray(data.data['amber']['1.21.1'])).toBe(true);
-      expect(Array.isArray(data.data['amber']['1.20.1'])).toBe(true);
+      // Verify version objects with all three loaders are present
+      expect(typeof data.data['fabric-api']['1.21.1']).toBe('object');
+      expect(typeof data.data['fabric-api']['1.20.1']).toBe('object');
+      expect(typeof data.data['amber']['1.21.1']).toBe('object');
+      expect(typeof data.data['amber']['1.20.1']).toBe('object');
+
+      // Verify all three loaders are present for each project
+      expect(data.data['fabric-api']['1.21.1']).toHaveProperty('forge');
+      expect(data.data['fabric-api']['1.21.1']).toHaveProperty('neoforge');
+      expect(data.data['fabric-api']['1.21.1']).toHaveProperty('fabric');
     }
   });
 
@@ -156,13 +161,17 @@ describe('Project Compatibility API Integration', () => {
     expect(data).toHaveProperty('data');
     expect(data.data).toBeDefined();
 
-    // Should have the project key but with empty loader arrays
+    // Should have the project key but with null values for all loaders
     if (data.data && typeof data.data === 'object') {
       expect(data.data).toHaveProperty('invalid-project-name-12345');
       if (data.data['invalid-project-name-12345']) {
-        expect(Array.isArray(data.data['invalid-project-name-12345']['1.21.1'])).toBe(true);
-        // Should be empty array for invalid project
-        expect(data.data['invalid-project-name-12345']['1.21.1']).toEqual([]);
+        expect(typeof data.data['invalid-project-name-12345']['1.21.1']).toBe('object');
+        // Should have null for all loaders for invalid project
+        expect(data.data['invalid-project-name-12345']['1.21.1']).toEqual({
+          forge: null,
+          neoforge: null,
+          fabric: null,
+        });
       }
     }
   });

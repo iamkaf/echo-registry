@@ -1,4 +1,4 @@
-import { DependencyVersion } from '@/types/dependency';
+import { DependencyVersion, VersionedProjectCompatibility } from '@/types/dependency';
 import { API_URLS, LOADER_MAPPING, BUILT_IN_DEPENDENCIES } from '../utils/constants';
 import {
   isDependencyCompatible,
@@ -236,8 +236,8 @@ export class DependencyService {
       throw new Error(`No ${projectSlug} versions available`);
     }
 
-    // Extract download URLs by finding the latest version for each loader
-    const downloadUrls = this.extractLatestDownloadsByLoader(versions);
+    // Extract download URLs and version numbers by finding the latest version for each loader
+    const { downloadUrls, loaderVersions } = this.extractLatestDownloadsAndVersionsByLoader(versions);
 
     // For version display, use the most recent version overall
     const latest = versions.reduce((prev, current) =>
@@ -256,6 +256,7 @@ export class DependencyService {
       mc_version: mcVersion,
       source_url: `https://modrinth.com/mod/${projectSlug}`,
       download_urls: downloadUrls,
+      loader_versions: loaderVersions,
       coordinates,
       fallback_used: false,
     };
@@ -292,7 +293,35 @@ export class DependencyService {
     );
   }
 
-  // Extract the latest download URL for each loader from multiple versions
+  // Extract the latest download URL and version number for each loader from multiple versions
+  private extractLatestDownloadsAndVersionsByLoader(
+    versions: ModrinthVersion[],
+  ): { downloadUrls: Record<string, string | null>; loaderVersions: Record<string, string | null> } {
+    const downloadUrls: Record<string, string | null> = {
+      forge: null,
+      neoforge: null,
+      fabric: null,
+    };
+    const loaderVersionNumbers: Record<string, string | null> = {
+      forge: null,
+      neoforge: null,
+      fabric: null,
+    };
+
+    const groupedVersions = this.groupVersionsByLoader(versions);
+
+    (Object.keys(groupedVersions) as Array<keyof typeof groupedVersions>).forEach((loader) => {
+      const latestVersion = this.findLatestVersionForLoader(groupedVersions[loader]);
+      if (latestVersion) {
+        downloadUrls[loader] = this.extractSingleLoaderDownload(latestVersion, loader);
+        loaderVersionNumbers[loader] = latestVersion.version_number;
+      }
+    });
+
+    return { downloadUrls, loaderVersions: loaderVersionNumbers };
+  }
+
+  // Extract the latest download URL for each loader from multiple versions (deprecated, kept for compatibility)
   private extractLatestDownloadsByLoader(
     versions: ModrinthVersion[],
   ): Record<string, string | null> {
@@ -604,14 +633,14 @@ export class DependencyService {
   async checkLoadersForProjects(
     projects: string[],
     mcVersions: string[],
-  ): Promise<Record<string, Record<string, string[]>>> {
-    const result: Record<string, Record<string, string[]>> = {};
+  ): Promise<VersionedProjectCompatibility> {
+    const result: VersionedProjectCompatibility = {};
 
-    // Initialize result structure with empty arrays
+    // Initialize result structure with empty objects
     projects.forEach((project) => {
       result[project] = {};
       mcVersions.forEach((version) => {
-        result[project][version] = [];
+        result[project][version] = {};
       });
     });
 
@@ -620,7 +649,7 @@ export class DependencyService {
 
     projects.forEach((project) => {
       mcVersions.forEach((mcVersion) => {
-        promises.push(this.processProjectVersion(project, mcVersion, result));
+        promises.push(this.processProjectVersionWithVersions(project, mcVersion, result));
       });
     });
 
@@ -630,42 +659,103 @@ export class DependencyService {
     return result;
   }
 
-  // Process a single project-version combination
-  private async processProjectVersion(
+  // Process a single project-version combination with versions
+  private async processProjectVersionWithVersions(
     project: string,
     mcVersion: string,
-    result: Record<string, Record<string, string[]>>,
+    result: VersionedProjectCompatibility,
   ): Promise<void> {
     try {
-      const dependency = await this.fetchModrinthProject(project, mcVersion);
-      const loaders = this.extractLoadersFromDependency(dependency);
-      result[project][mcVersion] = loaders;
+      let dependency: DependencyVersion;
+
+      // Check if it's a built-in dependency or a custom project
+      if (BUILT_IN_DEPENDENCIES.includes(project as typeof BUILT_IN_DEPENDENCIES[number])) {
+        // For built-in dependencies, we need to handle them specially since they map to specific loaders
+        dependency = await this.fetchDependency(project, mcVersion);
+        const loaderVersions = this.extractLoaderVersionsFromBuiltInDependency(dependency, project);
+        result[project][mcVersion] = loaderVersions;
+      } else {
+        // For Modrinth projects
+        dependency = await this.fetchModrinthProject(project, mcVersion);
+        const loaderVersions = this.extractLoaderVersionsFromDependency(dependency);
+        result[project][mcVersion] = loaderVersions;
+      }
     } catch (error) {
-      // Leave empty array for failed requests as per requirements
-      console.warn(`Failed to fetch loader data for ${project} on MC ${mcVersion}:`, error);
-      result[project][mcVersion] = [];
+      // Return null for all loaders when failed requests
+      console.warn(`Failed to fetch version data for ${project} on MC ${mcVersion}:`, error);
+      result[project][mcVersion] = {
+        forge: null,
+        neoforge: null,
+        fabric: null,
+      };
     }
   }
 
-  // Extract available loaders from dependency data
-  private extractLoadersFromDependency(dependency: DependencyVersion): string[] {
-    const loaders: string[] = [];
+  
+  // Extract loader versions from dependency data
+  private extractLoaderVersionsFromDependency(dependency: DependencyVersion): Record<string, string | null> {
+    // Always return all three loaders for consistency
+    const loaderVersions: Record<string, string | null> = {
+      forge: null,
+      neoforge: null,
+      fabric: null,
+    };
 
-    // Check download_urls for loader-specific files
-    if (dependency.download_urls) {
-      if (dependency.download_urls.forge) loaders.push('forge');
-      if (dependency.download_urls.neoforge) loaders.push('neoforge');
-      if (dependency.download_urls.fabric) loaders.push('fabric');
+    // If we have loader_versions from Modrinth API, use those directly
+    if (dependency.loader_versions) {
+      loaderVersions.forge = dependency.loader_versions.forge || null;
+      loaderVersions.neoforge = dependency.loader_versions.neoforge || null;
+      loaderVersions.fabric = dependency.loader_versions.fabric || null;
     }
 
-    // Fallback: use loader field if no download_urls
-    if (loaders.length === 0 && dependency.loader !== 'universal') {
-      loaders.push(dependency.loader);
+    // Fallback: use the general dependency.version if no specific versions found
+    if (Object.values(loaderVersions).every(v => v === null) && dependency.version) {
+      loaderVersions[dependency.loader] = dependency.version;
     }
 
-    return loaders.sort(); // Sort for consistent response
+    return loaderVersions;
   }
 
+  
+  // Extract loader versions from built-in dependency data
+  private extractLoaderVersionsFromBuiltInDependency(dependency: DependencyVersion, project: string): Record<string, string | null> {
+    // Always return all three loaders for consistency
+    const loaderVersions: Record<string, string | null> = {
+      forge: null,
+      neoforge: null,
+      fabric: null,
+    };
+
+    // Map built-in dependencies to their corresponding loaders
+    const loaderMapping: Record<string, string> = {
+      'forge': 'forge',
+      'neoforge': 'neoforge',
+      'fabric-loader': 'fabric',
+      'loom': 'fabric', // Fabric Loom is for Fabric
+      'forgegradle': 'forge', // ForgeGradle is for Forge
+      'moddev-gradle': 'neoforge', // ModDev Gradle is for NeoForge
+      'parchment': 'universal', // Parchment works with any loader
+      'neoform': 'universal', // NeoForm is universal
+    };
+
+    const targetLoader = loaderMapping[project];
+
+    if (targetLoader) {
+      loaderVersions[targetLoader] = this.formatVersion(dependency.version);
+    }
+
+    return loaderVersions;
+  }
+
+  // Format version string (preserve original version format)
+  private formatVersion(version: string | null): string | null {
+    if (!version || version === 'N/A' || version === null) {
+      return null; // Return null if version unavailable
+    }
+    return version; // Return version exactly as provided by mod authors
+  }
+
+  
   // Get minimum version for dependency (simplified version)
   private getMinimumVersion(name: string): string {
     const minVersions: Record<string, string> = {

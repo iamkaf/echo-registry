@@ -157,9 +157,7 @@ public class EchoRegistryClient {
           <button
             onClick={copyToClipboard}
             className={`text-xs px-2 py-1 rounded transition-all duration-200 shrink-0 ${
-              copied
-                ? 'bg-green-600 text-white'
-                : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+              copied ? 'bg-green-600 text-white' : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
             }`}
           >
             {copied ? (
@@ -190,7 +188,9 @@ public class EchoRegistryClient {
         {/* API URL Info */}
         <div className="mt-2 text-xs text-gray-500 border-t border-gray-800 pt-2">
           <div className="flex items-center justify-between">
-            <span>Endpoint: <code className="text-gray-400">{generateApiUrl()}</code></span>
+            <span>
+              Endpoint: <code className="text-gray-400">{generateApiUrl()}</code>
+            </span>
             <a
               href={`${APP_CONFIG.API_BASE_URL}/openapi.json`}
               target="_blank"

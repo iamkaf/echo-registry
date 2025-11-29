@@ -6,9 +6,10 @@ import { DependencyVersion } from '@/types/dependency';
  * Accepts versions like "1.21.1", "1.20", "1.20.4", etc.
  */
 export const MinecraftVersionParamSchema = z.object({
-  mc: z.string()
+  mc: z
+    .string()
     .regex(/^\d+\.\d+(\.\d+)?$/, 'Invalid Minecraft version format. Expected format: x.y or x.y.z')
-    .min(1, 'Minecraft version cannot be empty')
+    .min(1, 'Minecraft version cannot be empty'),
 });
 
 /**
@@ -16,13 +17,18 @@ export const MinecraftVersionParamSchema = z.object({
  * Accepts comma-separated project names
  */
 export const ProjectsQuerySchema = z.object({
-  projects: z.string()
+  projects: z
+    .string()
     .optional()
-    .transform(val =>
-      val ? val.split(',').map(p => p.trim()).filter(p => p.length > 0) : []
-    )
+    .transform((val) =>
+      val
+        ? val
+            .split(',')
+            .map((p) => p.trim())
+            .filter((p) => p.length > 0)
+        : [],
+    ),
 });
-
 
 /**
  * Dependency version validation
@@ -34,11 +40,13 @@ export const DependencyVersionSchema = z.object({
   version: z.string().nullable(),
   mc_version: z.string().min(1, 'Minecraft version cannot be empty'),
   source_url: z.string().url('Invalid source URL format'),
-  download_urls: z.object({
-    forge: z.string().url().nullable().optional(),
-    neoforge: z.string().url().nullable().optional(),
-    fabric: z.string().url().nullable().optional(),
-  }).optional(),
+  download_urls: z
+    .object({
+      forge: z.string().url().nullable().optional(),
+      neoforge: z.string().url().nullable().optional(),
+      fabric: z.string().url().nullable().optional(),
+    })
+    .optional(),
   coordinates: z.string().nullable().optional(),
   notes: z.string().optional(),
   fallback_used: z.boolean().optional(),
@@ -69,18 +77,19 @@ export const HealthResponseSchema = z.object({
  * Generic API response wrapper validation
  * This validates the structure of all API responses
  */
-export const ApiResponseSchema = <T>(dataSchema: z.ZodType<T>) => z.object({
-  data: dataSchema.optional(),
-  error: z.string().optional(),
-  cached_at: z.string().optional(),
-  timestamp: z.string().datetime('Invalid timestamp format'),
-});
+export const ApiResponseSchema = <T>(dataSchema: z.ZodType<T>) =>
+  z.object({
+    data: dataSchema.optional(),
+    error: z.string().optional(),
+    cached_at: z.string().optional(),
+    timestamp: z.string().datetime('Invalid timestamp format'),
+  });
 
 /**
  * Success response schema for dependencies endpoint
  */
 export const DependenciesResponseSchema = ApiResponseSchema(
-  z.record(z.string(), DependencyVersionSchema)
+  z.record(z.string(), DependencyVersionSchema),
 );
 
 /**
@@ -89,7 +98,7 @@ export const DependenciesResponseSchema = ApiResponseSchema(
 export const MinecraftVersionsResponseSchema = ApiResponseSchema(
   z.object({
     versions: z.array(MinecraftVersionSchema),
-  })
+  }),
 );
 
 /**
@@ -112,14 +121,14 @@ export const ErrorResponseSchema = z.object({
 export function validateMinecraftVersion(mcVersion: string): string {
   const result = MinecraftVersionParamSchema.safeParse({ mc: mcVersion });
   if (!result.success) {
-    const errorMessage = result.error.issues && result.error.issues.length > 0
-      ? result.error.issues[0]?.message
-      : 'Invalid Minecraft version format. Expected format: x.y or x.y.z';
+    const errorMessage =
+      result.error.issues && result.error.issues.length > 0
+        ? result.error.issues[0]?.message
+        : 'Invalid Minecraft version format. Expected format: x.y or x.y.z';
     throw new ValidationError(errorMessage);
   }
   return result.data.mc;
 }
-
 
 /**
  * Validate projects query parameter

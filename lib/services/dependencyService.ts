@@ -415,8 +415,9 @@ export class DependencyService {
     }
 
     // Filter to only SNAPSHOT versions and remove duplicates
-    const snapshotVersions = [...new Set(metadata.versions)]
-      .filter((v) => typeof v === 'string' && v.includes('SNAPSHOT'));
+    const snapshotVersions = [...new Set(metadata.versions)].filter(
+      (v) => typeof v === 'string' && v.includes('SNAPSHOT'),
+    );
 
     if (snapshotVersions.length === 0) {
       throw new Error('No SNAPSHOT versions found in Loom XML metadata');
@@ -572,7 +573,16 @@ export class DependencyService {
     };
 
     // Set coordinates to null for Modrinth projects (since they failed to fetch)
-    const isModrinthProject = !['forge', 'neoforge', 'fabric-loader', 'parchment', 'neoform', 'forgegradle', 'moddev-gradle', 'loom'].includes(name);
+    const isModrinthProject = ![
+      'forge',
+      'neoforge',
+      'fabric-loader',
+      'parchment',
+      'neoform',
+      'forgegradle',
+      'moddev-gradle',
+      'loom',
+    ].includes(name);
     const coordinates = isModrinthProject ? null : undefined;
 
     return {
@@ -618,7 +628,16 @@ export class DependencyService {
     };
 
     // Set coordinates to null for Modrinth projects (since they're incompatible)
-    const isModrinthProject = !['forge', 'neoforge', 'fabric-loader', 'parchment', 'neoform', 'forgegradle', 'moddev-gradle', 'loom'].includes(name);
+    const isModrinthProject = ![
+      'forge',
+      'neoforge',
+      'fabric-loader',
+      'parchment',
+      'neoform',
+      'forgegradle',
+      'moddev-gradle',
+      'loom',
+    ].includes(name);
 
     return {
       name,

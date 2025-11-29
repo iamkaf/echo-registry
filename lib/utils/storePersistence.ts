@@ -22,7 +22,7 @@ export const getStoredProjects = (): string[] => {
     const parsed = JSON.parse(stored);
     // Validate that it's an array of strings
     return Array.isArray(parsed)
-      ? parsed.filter(item => typeof item === 'string' && item.trim().length > 0)
+      ? parsed.filter((item) => typeof item === 'string' && item.trim().length > 0)
       : [];
   } catch (error) {
     console.warn('Error reading projects from localStorage:', error);
@@ -48,7 +48,7 @@ export const setStoredProjects = (projects: string[]): void => {
 
   try {
     // Validate input
-    const validProjects = projects.filter(p => typeof p === 'string' && p.trim().length > 0);
+    const validProjects = projects.filter((p) => typeof p === 'string' && p.trim().length > 0);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(validProjects));
   } catch (error) {
     console.warn('Error saving projects to localStorage:', error);

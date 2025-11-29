@@ -1,10 +1,5 @@
 import { useState } from 'react';
-import {
-  useProjects,
-  useAddProject,
-  useRemoveProject,
-  useMoveProject,
-} from '@/stores/useAppStore';
+import { useProjects, useAddProject, useRemoveProject, useMoveProject } from '@/stores/useAppStore';
 
 export default function ProjectConfig() {
   const projects = useProjects();

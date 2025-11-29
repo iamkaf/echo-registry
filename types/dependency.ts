@@ -31,7 +31,6 @@ export interface ApiResponse<T> {
   timestamp: string;
 }
 
-
 // Health check response
 export interface HealthResponse {
   status: 'ok' | 'degraded' | 'down';

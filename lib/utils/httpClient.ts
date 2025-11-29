@@ -15,7 +15,7 @@ export class HttpClientError extends Error {
   constructor(
     message: string,
     public status?: number,
-    public response?: unknown
+    public response?: unknown,
   ) {
     super(message);
     this.name = 'HttpClientError';
@@ -72,7 +72,7 @@ export async function fetchWithTimeout(url: string, options?: RequestInit): Prom
       const httpError = new HttpClientError(
         error.message,
         error.response?.status,
-        error.response?.data
+        error.response?.data,
       );
 
       // Return a Response object with error information
@@ -84,7 +84,7 @@ export async function fetchWithTimeout(url: string, options?: RequestInit): Prom
         {
           status: httpError.status || 500,
           statusText: 'HTTP Error',
-        }
+        },
       );
     }
 

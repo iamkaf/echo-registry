@@ -86,7 +86,11 @@ export function generateParchmentFallbackVersions(mcVersion: string): string[] {
   // Try previous minor versions (up to MAX_PREVIOUS_MINOR_VERSIONS versions back)
   for (let m = Math.max(0, minor - VERSION_UTILS.MAX_PREVIOUS_MINOR_VERSIONS); m < minor; m++) {
     // Try the latest patch versions for previous minors
-    for (let p = VERSION_UTILS.MAX_PATCH_VERSIONS_PER_MINOR; p >= VERSION_UTILS.DEFAULT_PATCH_START; p--) {
+    for (
+      let p = VERSION_UTILS.MAX_PATCH_VERSIONS_PER_MINOR;
+      p >= VERSION_UTILS.DEFAULT_PATCH_START;
+      p--
+    ) {
       versions.push(`${major}.${m}.${p}`);
     }
   }

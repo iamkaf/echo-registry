@@ -65,7 +65,13 @@ export default function Home() {
 
     // Update the ref for next comparison
     prevProjectsRef.current = [...projects];
-  }, [projects, selectedVersion, initialLoadingComplete, selectedVersionFromInitialization, fetchDependencies]);
+  }, [
+    projects,
+    selectedVersion,
+    initialLoadingComplete,
+    selectedVersionFromInitialization,
+    fetchDependencies,
+  ]);
 
   // Fetch dependencies when user changes versions (after initial load is complete)
   useEffect(() => {
@@ -73,7 +79,14 @@ export default function Home() {
       fetchDependencies(selectedVersion, projects);
       setSelectedVersionFromInitialization(false); // Reset flag
     }
-  }, [selectedVersion, initialLoadingComplete, selectedVersionFromInitialization, fetchDependencies, setSelectedVersionFromInitialization, projects]);
+  }, [
+    selectedVersion,
+    initialLoadingComplete,
+    selectedVersionFromInitialization,
+    fetchDependencies,
+    setSelectedVersionFromInitialization,
+    projects,
+  ]);
 
   const handleRefresh = () => {
     if (selectedVersion) {

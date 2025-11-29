@@ -48,16 +48,36 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
       case 'complete':
         return (
           <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-            <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <svg
+              className="w-6 h-6 text-green-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
           </div>
         );
       case 'error':
         return (
           <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-            <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-6 h-6 text-red-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </div>
         );
@@ -99,9 +119,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
         </div>
 
         {/* Loading Icon - Fixed height container */}
-        <div className="flex justify-center mb-6 h-12">
-          {getPhaseIcon()}
-        </div>
+        <div className="flex justify-center mb-6 h-12">{getPhaseIcon()}</div>
 
         {/* Loading Message - Fixed height container */}
         <div className="mb-8 min-h-[4rem] flex flex-col justify-center">
@@ -113,7 +131,8 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
             {loadingPhase !== 'error' && loadingPhase !== 'complete' && (
               <>
                 {loadingPhase === 'fetching_versions' && 'Checking available Minecraft versions...'}
-                {loadingPhase === 'fetching_dependencies' && 'Retrieving latest versions from Forge, NeoForge, Fabric, and Modrinth...'}
+                {loadingPhase === 'fetching_dependencies' &&
+                  'Retrieving latest versions from Forge, NeoForge, Fabric, and Modrinth...'}
               </>
             )}
             {loadingPhase === 'error' && <>&nbsp;</>}
@@ -155,7 +174,9 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
         <div className="flex justify-center space-x-2">
           <div
             className={`h-2 w-2 rounded-full transition-colors duration-300 ${
-              loadingPhase === 'fetching_versions' || loadingPhase === 'fetching_dependencies' || loadingPhase === 'complete'
+              loadingPhase === 'fetching_versions' ||
+              loadingPhase === 'fetching_dependencies' ||
+              loadingPhase === 'complete'
                 ? 'bg-blue-600'
                 : 'bg-gray-300'
             }`}
@@ -169,9 +190,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
           ></div>
           <div
             className={`h-2 w-2 rounded-full transition-colors duration-300 ${
-              loadingPhase === 'complete'
-                ? 'bg-green-600'
-                : 'bg-gray-300'
+              loadingPhase === 'complete' ? 'bg-green-600' : 'bg-gray-300'
             }`}
           ></div>
         </div>

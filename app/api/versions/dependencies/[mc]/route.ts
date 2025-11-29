@@ -5,7 +5,7 @@ import { formatApiTimestamp } from '@/lib/utils/dateUtils';
 import {
   validateMinecraftVersion,
   validateProjectsQuery,
-  ValidationError
+  ValidationError,
 } from '@/lib/schemas/apiSchemas';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ mc: string }> }) {
@@ -21,7 +21,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const customProjects = validateProjectsQuery(projectsParam || undefined);
 
     const dependencyService = new DependencyService();
-    const dependencies = await dependencyService.fetchAllDependencies(validatedMcVersion, customProjects);
+    const dependencies = await dependencyService.fetchAllDependencies(
+      validatedMcVersion,
+      customProjects,
+    );
 
     const response: ApiResponse<{
       mc_version: string;
@@ -56,4 +59,3 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json(errorResponse, { status: 500 });
   }
 }
-

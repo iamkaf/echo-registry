@@ -5,7 +5,6 @@ import { POPULAR_MODRINTH_PROJECTS } from '@/lib/utils/constants';
 import { formatApiTimestamp } from '@/lib/utils/dateUtils';
 import { getStoredProjects, setStoredProjects } from '@/lib/utils/storePersistence';
 
-
 interface AppState {
   // Data state
   dependencies: DependencyVersion[];
@@ -50,7 +49,9 @@ interface AppState {
   setInitialLoad: (isInitialLoad: boolean) => void;
   setAppReady: (appReady: boolean) => void;
   setInitialLoadingComplete: (initialLoadingComplete: boolean) => void;
-  setLoadingPhase: (phase: 'idle' | 'fetching_versions' | 'fetching_dependencies' | 'complete' | 'error') => void;
+  setLoadingPhase: (
+    phase: 'idle' | 'fetching_versions' | 'fetching_dependencies' | 'complete' | 'error',
+  ) => void;
   setLoadingMessage: (message: string) => void;
 
   // Request management actions
@@ -74,7 +75,8 @@ export const useAppStore = create<AppState>()(
       dependencies: [],
       minecraftVersions: [],
       selectedVersion: null,
-      projects: getStoredProjects().length > 0 ? getStoredProjects() : [...POPULAR_MODRINTH_PROJECTS],
+      projects:
+        getStoredProjects().length > 0 ? getStoredProjects() : [...POPULAR_MODRINTH_PROJECTS],
       loading: true,
       error: null,
       lastUpdated: null,
@@ -98,7 +100,8 @@ export const useAppStore = create<AppState>()(
       setDependencies: (deps) => set({ dependencies: deps }),
       setMinecraftVersions: (versions) => set({ minecraftVersions: versions }),
       setSelectedVersion: (version) => set({ selectedVersion: version }),
-      setSelectedVersionFromInitialization: (fromInitialization) => set({ selectedVersionFromInitialization: fromInitialization }),
+      setSelectedVersionFromInitialization: (fromInitialization) =>
+        set({ selectedVersionFromInitialization: fromInitialization }),
       setProjects: (projects) => {
         set({ projects });
         setStoredProjects(projects);
@@ -151,7 +154,7 @@ export const useAppStore = create<AppState>()(
 
       removeProject: (projectToRemove: string) => {
         const currentProjects = get().projects;
-        const newProjects = currentProjects.filter(p => p !== projectToRemove);
+        const newProjects = currentProjects.filter((p) => p !== projectToRemove);
         get().setProjects(newProjects);
       },
 
@@ -201,12 +204,18 @@ export const useAppStore = create<AppState>()(
           let url: string;
 
           if (typeof window !== 'undefined') {
-            url = new URL('/api/versions/dependencies/' + mcVersion, window.location.origin).toString();
+            url = new URL(
+              '/api/versions/dependencies/' + mcVersion,
+              window.location.origin,
+            ).toString();
           } else {
             url = '/api/versions/dependencies/' + mcVersion;
           }
 
-          const requestUrl = new URL(url, typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
+          const requestUrl = new URL(
+            url,
+            typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000',
+          );
           if (projectsToUse.length > 0) {
             requestUrl.searchParams.set('projects', projectsToUse.join(','));
           }
@@ -261,7 +270,9 @@ export const useAppStore = create<AppState>()(
 
           const latestRelease = versions
             .filter((v) => v.version_type === 'release')
-            .sort((a, b) => new Date(b.release_time).getTime() - new Date(a.release_time).getTime())[0];
+            .sort(
+              (a, b) => new Date(b.release_time).getTime() - new Date(a.release_time).getTime(),
+            )[0];
 
           if (!latestRelease) {
             throw new Error('No release versions found');
@@ -280,7 +291,7 @@ export const useAppStore = create<AppState>()(
           get().setLoadingMessage('Almost ready...');
 
           // Small delay for smooth transition
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise((resolve) => setTimeout(resolve, 500));
 
           get().setAppReady(true);
           get().setInitialLoadingComplete(true);
@@ -288,14 +299,20 @@ export const useAppStore = create<AppState>()(
           console.error('Failed to initialize app:', error);
           get().setLoadingPhase('error');
           get().setLoadingMessage('Failed to load data');
-          get().setError(error instanceof Error ? error.message : typeof error === 'string' ? error : 'Unknown error occurred');
+          get().setError(
+            error instanceof Error
+              ? error.message
+              : typeof error === 'string'
+                ? error
+                : 'Unknown error occurred',
+          );
         }
       },
     }),
     {
       name: 'echo-registry-store',
-    }
-  )
+    },
+  ),
 );
 
 // Selectors for specific data
@@ -320,10 +337,12 @@ export const useLoadingState = () => useAppStore((state) => state.loadingState);
 export const useLoadingContext = () => useAppStore((state) => state.loadingContext);
 export const useIsAnyRequestLoading = () => useAppStore((state) => state.activeRequests.size > 0);
 export const useActiveRequestCount = () => useAppStore((state) => state.activeRequests.size);
-export const useIsRequestActive = (requestId: string) => useAppStore((state) => state.activeRequests.has(requestId));
+export const useIsRequestActive = (requestId: string) =>
+  useAppStore((state) => state.activeRequests.has(requestId));
 
 // Version change tracking selector
-export const useSelectedVersionFromInitialization = () => useAppStore((state) => state.selectedVersionFromInitialization);
+export const useSelectedVersionFromInitialization = () =>
+  useAppStore((state) => state.selectedVersionFromInitialization);
 
 // Project management action selectors
 export const useAddProject = () => useAppStore((state) => state.addProject);
@@ -334,14 +353,16 @@ export const useMoveProject = () => useAppStore((state) => state.moveProject);
 export const useSetDependencies = () => useAppStore((state) => state.setDependencies);
 export const useSetMinecraftVersions = () => useAppStore((state) => state.setMinecraftVersions);
 export const useSetSelectedVersion = () => useAppStore((state) => state.setSelectedVersion);
-export const useSetSelectedVersionFromInitialization = () => useAppStore((state) => state.setSelectedVersionFromInitialization);
+export const useSetSelectedVersionFromInitialization = () =>
+  useAppStore((state) => state.setSelectedVersionFromInitialization);
 export const useSetProjects = () => useAppStore((state) => state.setProjects);
 export const useSetLoading = () => useAppStore((state) => state.setLoading);
 export const useSetError = () => useAppStore((state) => state.setError);
 export const useSetLastUpdated = () => useAppStore((state) => state.setLastUpdated);
 export const useSetInitialLoad = () => useAppStore((state) => state.setInitialLoad);
 export const useSetAppReady = () => useAppStore((state) => state.setAppReady);
-export const useSetInitialLoadingComplete = () => useAppStore((state) => state.setInitialLoadingComplete);
+export const useSetInitialLoadingComplete = () =>
+  useAppStore((state) => state.setInitialLoadingComplete);
 export const useSetLoadingPhase = () => useAppStore((state) => state.setLoadingPhase);
 export const useSetLoadingMessage = () => useAppStore((state) => state.setLoadingMessage);
 

@@ -21,7 +21,7 @@ export const DATE_FORMATS = {
  * @returns ISO 8601 formatted timestamp string
  */
 export function formatApiTimestamp(date?: Date | string): string {
-  const dateObj = typeof date === 'string' ? parseISO(date) : (date || new Date());
+  const dateObj = typeof date === 'string' ? parseISO(date) : date || new Date();
   return format(dateObj, DATE_FORMATS.API_TIMESTAMP);
 }
 
@@ -31,7 +31,7 @@ export function formatApiTimestamp(date?: Date | string): string {
  * @returns User-friendly date and time string
  */
 export function formatDateForDisplay(date?: Date | string): string {
-  const dateObj = typeof date === 'string' ? parseISO(date) : (date || new Date());
+  const dateObj = typeof date === 'string' ? parseISO(date) : date || new Date();
   return format(dateObj, DATE_FORMATS.DISPLAY_DATETIME);
 }
 
@@ -41,7 +41,7 @@ export function formatDateForDisplay(date?: Date | string): string {
  * @returns Compact date and time string
  */
 export function formatDateShort(date?: Date | string): string {
-  const dateObj = typeof date === 'string' ? parseISO(date) : (date || new Date());
+  const dateObj = typeof date === 'string' ? parseISO(date) : date || new Date();
   return format(dateObj, DATE_FORMATS.DISPLAY_SHORT_DATETIME);
 }
 
@@ -51,7 +51,7 @@ export function formatDateShort(date?: Date | string): string {
  * @returns Compact date string
  */
 export function formatDateOnly(date?: Date | string): string {
-  const dateObj = typeof date === 'string' ? parseISO(date) : (date || new Date());
+  const dateObj = typeof date === 'string' ? parseISO(date) : date || new Date();
   return format(dateObj, DATE_FORMATS.DISPLAY_SHORT_DATE);
 }
 
@@ -61,7 +61,7 @@ export function formatDateOnly(date?: Date | string): string {
  * @returns Relative time string
  */
 export function formatRelativeTime(date?: Date | string): string {
-  const dateObj = typeof date === 'string' ? parseISO(date) : (date || new Date());
+  const dateObj = typeof date === 'string' ? parseISO(date) : date || new Date();
   return formatDistanceToNow(dateObj, { addSuffix: true });
 }
 

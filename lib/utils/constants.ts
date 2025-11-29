@@ -40,6 +40,7 @@ export const API_URLS = {
     'https://maven.minecraftforge.net/net/minecraftforge/gradle/ForgeGradle/maven-metadata.xml',
   MODDEV_GRADLE_METADATA:
     'https://maven.neoforged.net/releases/net/neoforged/moddev-gradle/maven-metadata.xml',
+  LOOM_METADATA: 'https://maven.fabricmc.net/net/fabricmc/fabric-loom/maven-metadata.xml',
   MINECRAFT_MANIFEST: 'https://piston-meta.mojang.com/mc/game/version_manifest_v2.json',
 } as const;
 
@@ -66,6 +67,7 @@ export const MINIMUM_COMPATIBLE_VERSIONS: Record<string, string> = {
   'moddev-gradle': '1.20.2',
   forgegradle: '1.2.5',
   forge: '1.2.5', // Forge has been around since very early versions
+  loom: '1.13.0', // Fabric Loom requires Fabric-compatible versions
   parchment: '1.16.0',
 } as const;
 
@@ -83,4 +85,5 @@ export const LOADER_MAPPING: Record<string, DependencyVersion['loader']> = {
   rei: 'universal',
   'architectury-api': 'universal',
   amber: 'universal',
+  loom: 'fabric',
 } as const;

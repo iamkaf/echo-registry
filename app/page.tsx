@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import VersionTable from '@/components/VersionTable';
 import Sidebar from '@/components/Sidebar';
 import SplashScreen from '@/components/SplashScreen';
@@ -37,6 +37,9 @@ export default function Home() {
   const isAnyRequestLoading = useIsAnyRequestLoading();
   const loadingContext = useLoadingContext();
 
+  // Ref for tracking previous projects to detect changes
+  const prevProjectsRef = useRef<string[]>(projects);
+
   // Get actions from Zustand store
   const {
     fetchDependencies,
@@ -45,13 +48,32 @@ export default function Home() {
     clearError,
   } = useAppActions();
 
+  // Enhanced project change detection
+  useEffect(() => {
+    // Skip during initial loading phase
+    if (!initialLoadingComplete) return;
+
+    // Check if projects have actually changed (deep comparison)
+    const projectsChanged =
+      prevProjectsRef.current.length !== projects.length ||
+      prevProjectsRef.current.some((project, index) => project !== projects[index]);
+
+    if (projectsChanged && selectedVersion && !selectedVersionFromInitialization) {
+      console.log('Projects changed, refetching dependencies...');
+      fetchDependencies(selectedVersion, projects);
+    }
+
+    // Update the ref for next comparison
+    prevProjectsRef.current = [...projects];
+  }, [projects, selectedVersion, initialLoadingComplete, selectedVersionFromInitialization, fetchDependencies]);
+
   // Fetch dependencies when user changes versions (after initial load is complete)
   useEffect(() => {
     if (selectedVersion && initialLoadingComplete && !selectedVersionFromInitialization) {
-      fetchDependencies(selectedVersion);
+      fetchDependencies(selectedVersion, projects);
       setSelectedVersionFromInitialization(false); // Reset flag
     }
-  }, [selectedVersion, projects, initialLoadingComplete, selectedVersionFromInitialization, fetchDependencies, setSelectedVersionFromInitialization]);
+  }, [selectedVersion, initialLoadingComplete, selectedVersionFromInitialization, fetchDependencies, setSelectedVersionFromInitialization, projects]);
 
   const handleRefresh = () => {
     if (selectedVersion) {
@@ -79,7 +101,7 @@ export default function Home() {
 
   // Main app interface
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="flex-1 bg-gray-50">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 lg:py-8">
         <header className="text-center mb-6 lg:mb-8">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">

@@ -128,3 +128,22 @@ export function sortVersionsSemantically(versions: string[]): string[] {
     return a.localeCompare(b);
   });
 }
+
+/**
+ * Application version and build information utilities
+ */
+
+export function getAppVersion(): string {
+  // Get version from package.json during build time
+  return process.env.NEXT_PUBLIC_APP_VERSION || '0.1.0';
+}
+
+export function getGitCommit(): string {
+  // Get short git hash from build-time environment variable
+  return process.env.NEXT_PUBLIC_GIT_COMMIT || 'unknown';
+}
+
+export function getBuildTimestamp(): string {
+  // Get build timestamp from environment variable
+  return process.env.NEXT_PUBLIC_BUILD_TIME || new Date().toISOString();
+}

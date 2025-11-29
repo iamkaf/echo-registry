@@ -1,36 +1,23 @@
 import { useState } from 'react';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import {
+  useProjects,
+  useAddProject,
+  useRemoveProject,
+  useMoveProject,
+} from '@/stores/useAppStore';
 
 export default function ProjectConfig() {
-  const [projects, setProjects] = useLocalStorage<string[]>('echo-registry-projects', [
-    'amber',
-    'fabric-api',
-    'modmenu',
-    'rei',
-    'architectury-api',
-  ]);
+  const projects = useProjects();
+  const addProject = useAddProject();
+  const removeProject = useRemoveProject();
+  const moveProject = useMoveProject();
   const [newProject, setNewProject] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const addProject = () => {
-    const trimmed = newProject.trim().toLowerCase();
-    if (trimmed && !projects.includes(trimmed)) {
-      setProjects([...projects, trimmed]);
+  const handleAddProject = () => {
+    if (newProject.trim()) {
+      addProject(newProject.trim());
       setNewProject('');
-    }
-  };
-
-  const removeProject = (projectToRemove: string) => {
-    setProjects(projects.filter((p) => p !== projectToRemove));
-  };
-
-  const moveProject = (index: number, direction: 'up' | 'down') => {
-    const newProjects = [...projects];
-    const newIndex = direction === 'up' ? index - 1 : index + 1;
-
-    if (newIndex >= 0 && newIndex < projects.length) {
-      [newProjects[index], newProjects[newIndex]] = [newProjects[newIndex], newProjects[index]];
-      setProjects(newProjects);
     }
   };
 
@@ -91,12 +78,12 @@ export default function ProjectConfig() {
               type="text"
               value={newProject}
               onChange={(e) => setNewProject(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && addProject()}
+              onKeyPress={(e) => e.key === 'Enter' && handleAddProject()}
               placeholder="Add project (e.g., jade)"
               className="flex-1 px-2 lg:px-3 py-1 lg:py-1 text-xs lg:text-sm border border-gray-300 rounded focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
             <button
-              onClick={addProject}
+              onClick={handleAddProject}
               disabled={!newProject.trim()}
               className="px-2 lg:px-3 py-1 lg:py-1 text-xs lg:text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
             >

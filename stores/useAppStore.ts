@@ -3,6 +3,7 @@ import { devtools } from 'zustand/middleware';
 import { DependencyVersion, MinecraftVersion } from '@/types/dependency';
 import { POPULAR_MODRINTH_PROJECTS } from '@/lib/utils/constants';
 import { formatApiTimestamp } from '@/lib/utils/dateUtils';
+import { getStoredProjects, setStoredProjects } from '@/lib/utils/storePersistence';
 
 
 interface AppState {
@@ -31,6 +32,11 @@ interface AppState {
 
   // Version change tracking
   selectedVersionFromInitialization: boolean;
+
+  // Project management actions
+  addProject: (project: string) => void;
+  removeProject: (projectToRemove: string) => void;
+  moveProject: (index: number, direction: 'up' | 'down') => void;
 
   // Actions
   setDependencies: (deps: DependencyVersion[]) => void;
@@ -68,7 +74,7 @@ export const useAppStore = create<AppState>()(
       dependencies: [],
       minecraftVersions: [],
       selectedVersion: null,
-      projects: [...POPULAR_MODRINTH_PROJECTS],
+      projects: getStoredProjects().length > 0 ? getStoredProjects() : [...POPULAR_MODRINTH_PROJECTS],
       loading: true,
       error: null,
       lastUpdated: null,
@@ -93,7 +99,10 @@ export const useAppStore = create<AppState>()(
       setMinecraftVersions: (versions) => set({ minecraftVersions: versions }),
       setSelectedVersion: (version) => set({ selectedVersion: version }),
       setSelectedVersionFromInitialization: (fromInitialization) => set({ selectedVersionFromInitialization: fromInitialization }),
-      setProjects: (projects) => set({ projects }),
+      setProjects: (projects) => {
+        set({ projects });
+        setStoredProjects(projects);
+      },
       setLoading: (loading) => set({ loading }),
       setError: (error) => set({ error }),
       setLastUpdated: (lastUpdated) => set({ lastUpdated }),
@@ -130,6 +139,33 @@ export const useAppStore = create<AppState>()(
       setLoadingState: (state: 'idle' | 'loading' | 'error') => set({ loadingState: state }),
       setLoadingContext: (context: string | null) => set({ loadingContext: context }),
 
+      // Project management actions
+      addProject: (project: string) => {
+        const currentProjects = get().projects;
+        const normalizedProject = project.trim().toLowerCase();
+        if (normalizedProject && !currentProjects.includes(normalizedProject)) {
+          const newProjects = [...currentProjects, normalizedProject];
+          get().setProjects(newProjects);
+        }
+      },
+
+      removeProject: (projectToRemove: string) => {
+        const currentProjects = get().projects;
+        const newProjects = currentProjects.filter(p => p !== projectToRemove);
+        get().setProjects(newProjects);
+      },
+
+      moveProject: (index: number, direction: 'up' | 'down') => {
+        const currentProjects = get().projects;
+        const newIndex = direction === 'up' ? index - 1 : index + 1;
+
+        if (newIndex >= 0 && newIndex < currentProjects.length) {
+          const newProjects = [...currentProjects];
+          [newProjects[index], newProjects[newIndex]] = [newProjects[newIndex], newProjects[index]];
+          get().setProjects(newProjects);
+        }
+      },
+
       // Async actions
       fetchMinecraftVersions: async () => {
         const requestId = `minecraft-versions-${Date.now()}`;
@@ -162,13 +198,20 @@ export const useAppStore = create<AppState>()(
           get().clearError();
 
           const projectsToUse = projects || get().projects;
-          const url = new URL('/api/versions/dependencies/' + mcVersion, window.location.origin);
+          let url: string;
 
-          if (projectsToUse.length > 0) {
-            url.searchParams.set('projects', projectsToUse.join(','));
+          if (typeof window !== 'undefined') {
+            url = new URL('/api/versions/dependencies/' + mcVersion, window.location.origin).toString();
+          } else {
+            url = '/api/versions/dependencies/' + mcVersion;
           }
 
-          const response = await fetch(url.toString());
+          const requestUrl = new URL(url, typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
+          if (projectsToUse.length > 0) {
+            requestUrl.searchParams.set('projects', projectsToUse.join(','));
+          }
+
+          const response = await fetch(requestUrl.toString());
           const data = await response.json();
 
           if (data.error) {
@@ -282,6 +325,11 @@ export const useIsRequestActive = (requestId: string) => useAppStore((state) => 
 // Version change tracking selector
 export const useSelectedVersionFromInitialization = () => useAppStore((state) => state.selectedVersionFromInitialization);
 
+// Project management action selectors
+export const useAddProject = () => useAppStore((state) => state.addProject);
+export const useRemoveProject = () => useAppStore((state) => state.removeProject);
+export const useMoveProject = () => useAppStore((state) => state.moveProject);
+
 // Actions as individual hooks to avoid infinite re-renders
 export const useSetDependencies = () => useAppStore((state) => state.setDependencies);
 export const useSetMinecraftVersions = () => useAppStore((state) => state.setMinecraftVersions);
@@ -337,5 +385,9 @@ export const useAppActions = () => {
     refreshData: store.refreshData,
     clearError: store.clearError,
     initializeApp: store.initializeApp,
+    // Project management actions
+    addProject: store.addProject,
+    removeProject: store.removeProject,
+    moveProject: store.moveProject,
   };
 };

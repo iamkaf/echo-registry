@@ -74,6 +74,9 @@ export class DependencyService {
         case 'forgegradle':
           result = await this.fetchForgeGradle(mcVersion);
           break;
+        case 'loom':
+          result = await this.fetchLoom(mcVersion);
+          break;
         default:
           // Assume it's a Modrinth project
           result = await this.fetchModrinthProject(name, mcVersion);
@@ -395,6 +398,45 @@ export class DependencyService {
     };
   }
 
+  // Fetch Fabric Loom version from Maven metadata
+  private async fetchLoom(mcVersion: string): Promise<DependencyVersion> {
+    const url = API_URLS.LOOM_METADATA;
+
+    const response = await fetchWithTimeout(url);
+    if (!response.ok) {
+      throw new Error('Failed to fetch Loom maven metadata');
+    }
+
+    const content = await response.text();
+    const metadata = parseMavenMetadata(content);
+
+    if (metadata.versions.length === 0) {
+      throw new Error('No versions found in Loom XML metadata');
+    }
+
+    // Filter to only SNAPSHOT versions and remove duplicates
+    const snapshotVersions = [...new Set(metadata.versions)]
+      .filter((v) => typeof v === 'string' && v.includes('SNAPSHOT'));
+
+    if (snapshotVersions.length === 0) {
+      throw new Error('No SNAPSHOT versions found in Loom XML metadata');
+    }
+
+    // Sort versions semantically and get the latest SNAPSHOT
+    const sortedVersions = sortVersionsSemantically(snapshotVersions);
+    const latestVersion = sortedVersions[sortedVersions.length - 1];
+
+    return {
+      name: 'loom',
+      loader: 'fabric',
+      version: latestVersion,
+      mc_version: mcVersion,
+      source_url: 'https://maven.fabricmc.net/net/fabricmc/fabric-loom/',
+      notes: 'Fabric Loom Gradle plugin (SNAPSHOT)',
+      fallback_used: false,
+    };
+  }
+
   // Fetch ModDev Gradle version from Maven metadata (version-agnostic)
   private async fetchModDevGradle(mcVersion: string): Promise<DependencyVersion> {
     const url = API_URLS.MODDEV_GRADLE_METADATA;
@@ -483,6 +525,7 @@ export class DependencyService {
       'neoform',
       'moddev-gradle',
       'forgegradle',
+      'loom',
       ...customProjects,
     ];
 
@@ -520,6 +563,8 @@ export class DependencyService {
           return 'https://maven.minecraftforge.net/net/minecraftforge/gradle/ForgeGradle/';
         case 'moddev-gradle':
           return 'https://maven.neoforged.net/releases/net/neoforged/moddev-gradle/';
+        case 'loom':
+          return 'https://maven.fabricmc.net/net/fabricmc/fabric-loom/';
         default:
           // For Modrinth projects, return their Modrinth page
           return `https://modrinth.com/mod/${name}`;
@@ -527,7 +572,7 @@ export class DependencyService {
     };
 
     // Set coordinates to null for Modrinth projects (since they failed to fetch)
-    const isModrinthProject = !['forge', 'neoforge', 'fabric-loader', 'parchment', 'neoform', 'forgegradle', 'moddev-gradle'].includes(name);
+    const isModrinthProject = !['forge', 'neoforge', 'fabric-loader', 'parchment', 'neoform', 'forgegradle', 'moddev-gradle', 'loom'].includes(name);
     const coordinates = isModrinthProject ? null : undefined;
 
     return {
@@ -564,6 +609,8 @@ export class DependencyService {
           return 'https://maven.minecraftforge.net/net/minecraftforge/gradle/ForgeGradle/';
         case 'moddev-gradle':
           return 'https://maven.neoforged.net/releases/net/neoforged/moddev-gradle/';
+        case 'loom':
+          return 'https://maven.fabricmc.net/net/fabricmc/fabric-loom/';
         default:
           // For Modrinth projects, return their Modrinth page
           return `https://modrinth.com/mod/${name}`;
@@ -571,7 +618,7 @@ export class DependencyService {
     };
 
     // Set coordinates to null for Modrinth projects (since they're incompatible)
-    const isModrinthProject = !['forge', 'neoforge', 'fabric-loader', 'parchment', 'neoform', 'forgegradle', 'moddev-gradle'].includes(name);
+    const isModrinthProject = !['forge', 'neoforge', 'fabric-loader', 'parchment', 'neoform', 'forgegradle', 'moddev-gradle', 'loom'].includes(name);
 
     return {
       name,

@@ -261,24 +261,14 @@ export class DependencyService {
     };
   }
 
-  // Extract the latest download URL for each loader from multiple versions
-  private extractLatestDownloadsByLoader(
-    versions: ModrinthVersion[],
-  ): Record<string, string | null> {
-    const downloads: Record<string, string | null> = {
-      forge: null,
-      neoforge: null,
-      fabric: null,
-    };
-
-    // Group versions by loader and find the most recent one for each
+  // Group versions by their supported loaders
+  private groupVersionsByLoader(versions: ModrinthVersion[]): Record<string, ModrinthVersion[]> {
     const loaderVersions: Record<string, ModrinthVersion[]> = {
       forge: [],
       neoforge: [],
       fabric: [],
     };
 
-    // Group versions by their supported loaders
     versions.forEach((version: ModrinthVersion) => {
       if (!version.loaders || !Array.isArray(version.loaders)) return;
 
@@ -289,24 +279,36 @@ export class DependencyService {
       });
     });
 
-    // For each loader, find the most recent version and extract its download URL
+    return loaderVersions;
+  }
+
+  // Find the most recent version for a specific loader
+  private findLatestVersionForLoader(loaderVersions: ModrinthVersion[]): ModrinthVersion | null {
+    if (loaderVersions.length === 0) return null;
+
+    return loaderVersions.reduce(
+      (prev: ModrinthVersion, current: ModrinthVersion) =>
+        new Date(current.date_published) > new Date(prev.date_published) ? current : prev,
+    );
+  }
+
+  // Extract the latest download URL for each loader from multiple versions
+  private extractLatestDownloadsByLoader(
+    versions: ModrinthVersion[],
+  ): Record<string, string | null> {
+    const downloads: Record<string, string | null> = {
+      forge: null,
+      neoforge: null,
+      fabric: null,
+    };
+
+    const loaderVersions = this.groupVersionsByLoader(versions);
+
     (Object.keys(loaderVersions) as Array<keyof typeof loaderVersions>).forEach((loader) => {
-      const loaderVersionsList = loaderVersions[loader];
-
-      if (loaderVersionsList.length === 0) {
-        downloads[loader] = null;
-        return;
+      const latestVersion = this.findLatestVersionForLoader(loaderVersions[loader]);
+      if (latestVersion) {
+        downloads[loader] = this.extractSingleLoaderDownload(latestVersion, loader);
       }
-
-      // Find the most recent version for this loader
-      const latestVersion = loaderVersionsList.reduce(
-        (prev: ModrinthVersion, current: ModrinthVersion) =>
-          new Date(current.date_published) > new Date(prev.date_published) ? current : prev,
-      );
-
-      // Extract download URL from this version
-      const downloadUrl = this.extractSingleLoaderDownload(latestVersion, loader);
-      downloads[loader] = downloadUrl;
     });
 
     return downloads;

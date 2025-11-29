@@ -139,7 +139,7 @@ export function sortVersionsSemantically(versions: string[]): string[] {
 
 export function getAppVersion(): string {
   // Get version from package.json during build time
-  return process.env.NEXT_PUBLIC_APP_VERSION || '0.1.0';
+  return process.env.NEXT_PUBLIC_APP_VERSION || '0.3.0';
 }
 
 export function getGitCommit(): string {

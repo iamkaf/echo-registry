@@ -9,7 +9,9 @@
     "lint": "eslint",
     "format": "prettier --write .",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "check": "npm run type-check && npm run lint && npm run test:run",
+    "type-check": "npx tsc --noEmit"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.80.0",

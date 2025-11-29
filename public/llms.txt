@@ -44,24 +44,38 @@ Response format:
 {
   "data": {
     "forge": {
-      "1.21.1": {
-        "forge": "52.1.0",
+      "1.21.10": {
+        "forge": "60.1.0",
         "neoforge": null,
         "fabric": null
       }
     },
     "neoforge": {
-      "1.21.1": {
+      "1.21.10": {
         "forge": null,
         "neoforge": "21.10.63",
         "fabric": null
       }
     },
     "fabric-api": {
-      "1.21.1": {
+      "1.21.10": {
         "forge": null,
         "neoforge": null,
-        "fabric": "0.116.7+1.21.1"
+        "fabric": "0.138.3+1.21.10"
+      }
+    },
+    "amber": {
+      "1.21.10": {
+        "forge": "8.1.0+1.21.10",
+        "neoforge": "8.1.0+1.21.10",
+        "fabric": "8.1.0+1.21.10"
+      }
+    },
+    "jade": {
+      "1.21.10": {
+        "forge": null,
+        "neoforge": "20.0.5+neoforge",
+        "fabric": "20.1.0+fabric"
       }
     }
   },

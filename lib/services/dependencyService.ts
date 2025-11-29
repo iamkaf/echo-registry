@@ -1,5 +1,5 @@
 import { DependencyVersion } from '@/types/dependency';
-import { API_URLS, LOADER_MAPPING } from '../utils/constants';
+import { API_URLS, LOADER_MAPPING, BUILT_IN_DEPENDENCIES } from '../utils/constants';
 import {
   isDependencyCompatible,
   extractMinorVersion,
@@ -35,6 +35,21 @@ export class DependencyService {
 
   constructor() {
     this.cacheService = new CacheService();
+  }
+
+  // Private method to get source URL for a dependency
+  private getSourceUrl(name: string): string {
+    const sourceUrls: Record<string, string> = {
+      'forge': 'https://files.minecraftforge.net/net/minecraftforge/forge/',
+      'neoforge': 'https://maven.neoforged.net/releases/net/neoforged/neoforge/',
+      'fabric-loader': 'https://meta.fabricmc.net/v2/versions/loader/',
+      'parchment': 'https://maven.parchmentmc.org/',
+      'neoform': 'https://maven.neoforged.net/releases/net/neoforged/neoform/',
+      'forgegradle': 'https://maven.minecraftforge.net/net/minecraftforge/gradle/ForgeGradle/',
+      'moddev-gradle': 'https://maven.neoforged.net/releases/net/neoforged/moddev-gradle/',
+      'loom': 'https://maven.fabricmc.net/net/fabricmc/fabric-loom/',
+    };
+    return sourceUrls[name] || `https://modrinth.com/mod/${name}`;
   }
 
   // Main method to fetch any dependency
@@ -547,42 +562,8 @@ export class DependencyService {
   private createErrorVersion(name: string, mcVersion: string, error: string): DependencyVersion {
     const loader = LOADER_MAPPING[name] || 'universal';
 
-    // Provide source URLs for known dependencies even when they fail
-    const getSourceUrl = (name: string): string => {
-      switch (name) {
-        case 'forge':
-          return 'https://files.minecraftforge.net/net/minecraftforge/forge/';
-        case 'neoforge':
-          return 'https://maven.neoforged.net/releases/net/neoforged/neoforge/';
-        case 'fabric-loader':
-          return 'https://meta.fabricmc.net/v2/versions/loader/';
-        case 'parchment':
-          return 'https://maven.parchmentmc.org/';
-        case 'neoform':
-          return 'https://maven.neoforged.net/releases/net/neoforged/neoform/';
-        case 'forgegradle':
-          return 'https://maven.minecraftforge.net/net/minecraftforge/gradle/ForgeGradle/';
-        case 'moddev-gradle':
-          return 'https://maven.neoforged.net/releases/net/neoforged/moddev-gradle/';
-        case 'loom':
-          return 'https://maven.fabricmc.net/net/fabricmc/fabric-loom/';
-        default:
-          // For Modrinth projects, return their Modrinth page
-          return `https://modrinth.com/mod/${name}`;
-      }
-    };
-
     // Set coordinates to null for Modrinth projects (since they failed to fetch)
-    const isModrinthProject = ![
-      'forge',
-      'neoforge',
-      'fabric-loader',
-      'parchment',
-      'neoform',
-      'forgegradle',
-      'moddev-gradle',
-      'loom',
-    ].includes(name);
+    const isModrinthProject = !BUILT_IN_DEPENDENCIES.includes(name as typeof BUILT_IN_DEPENDENCIES[number]);
     const coordinates = isModrinthProject ? null : undefined;
 
     return {
@@ -590,7 +571,7 @@ export class DependencyService {
       loader,
       version: null,
       mc_version: mcVersion,
-      source_url: getSourceUrl(name),
+      source_url: this.getSourceUrl(name),
       ...(isModrinthProject && { coordinates }),
       notes: `Failed to fetch: ${error}`,
       fallback_used: false,
@@ -602,49 +583,15 @@ export class DependencyService {
     const loader = LOADER_MAPPING[name] || 'universal';
     const minVersion = this.getMinimumVersion(name);
 
-    // Provide source URLs for known dependencies even when incompatible
-    const getSourceUrl = (name: string): string => {
-      switch (name) {
-        case 'forge':
-          return 'https://files.minecraftforge.net/net/minecraftforge/forge/';
-        case 'neoforge':
-          return 'https://maven.neoforged.net/releases/net/neoforged/neoforge/';
-        case 'fabric-loader':
-          return 'https://meta.fabricmc.net/v2/versions/loader/';
-        case 'parchment':
-          return 'https://maven.parchmentmc.org/';
-        case 'neoform':
-          return 'https://maven.neoforged.net/releases/net/neoforged/neoform/';
-        case 'forgegradle':
-          return 'https://maven.minecraftforge.net/net/minecraftforge/gradle/ForgeGradle/';
-        case 'moddev-gradle':
-          return 'https://maven.neoforged.net/releases/net/neoforged/moddev-gradle/';
-        case 'loom':
-          return 'https://maven.fabricmc.net/net/fabricmc/fabric-loom/';
-        default:
-          // For Modrinth projects, return their Modrinth page
-          return `https://modrinth.com/mod/${name}`;
-      }
-    };
-
     // Set coordinates to null for Modrinth projects (since they're incompatible)
-    const isModrinthProject = ![
-      'forge',
-      'neoforge',
-      'fabric-loader',
-      'parchment',
-      'neoform',
-      'forgegradle',
-      'moddev-gradle',
-      'loom',
-    ].includes(name);
+    const isModrinthProject = !BUILT_IN_DEPENDENCIES.includes(name as typeof BUILT_IN_DEPENDENCIES[number]);
 
     return {
       name,
       loader,
       version: 'N/A',
       mc_version: mcVersion,
-      source_url: getSourceUrl(name),
+      source_url: this.getSourceUrl(name),
       ...(isModrinthProject && { coordinates: null }),
       notes: `Not available for Minecraft ${mcVersion}. Requires ${minVersion} or later.`,
       fallback_used: false,

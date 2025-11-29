@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { DependencyVersion, MinecraftVersion } from '@/types/dependency';
-import { POPULAR_MODRINTH_PROJECTS } from '@/lib/utils/constants';
+import { POPULAR_MODRINTH_PROJECTS, UI_CONSTANTS } from '@/lib/utils/constants';
 import { formatApiTimestamp } from '@/lib/utils/dateUtils';
 import { getStoredProjects, setStoredProjects } from '@/lib/utils/storePersistence';
 
@@ -291,7 +291,7 @@ export const useAppStore = create<AppState>()(
           get().setLoadingMessage('Almost ready...');
 
           // Small delay for smooth transition
-          await new Promise((resolve) => setTimeout(resolve, 500));
+          await new Promise((resolve) => setTimeout(resolve, UI_CONSTANTS.SPLASH_SCREEN_DELAY));
 
           get().setAppReady(true);
           get().setInitialLoadingComplete(true);

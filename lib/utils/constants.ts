@@ -71,6 +71,23 @@ export const MINIMUM_COMPATIBLE_VERSIONS: Record<string, string> = {
   parchment: '1.16.0',
 } as const;
 
+// Built-in dependencies (not Modrinth projects)
+export const BUILT_IN_DEPENDENCIES = [
+  'forge',
+  'neoforge',
+  'fabric-loader',
+  'parchment',
+  'neoform',
+  'forgegradle',
+  'moddev-gradle',
+  'loom'
+] as const;
+
+// UI Constants
+export const UI_CONSTANTS = {
+  SPLASH_SCREEN_DELAY: 500,
+} as const;
+
 // Loader type mapping
 export const LOADER_MAPPING: Record<string, DependencyVersion['loader']> = {
   forge: 'forge',

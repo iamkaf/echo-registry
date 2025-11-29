@@ -93,17 +93,5 @@ export async function fetchWithTimeout(url: string, options?: RequestInit): Prom
   }
 }
 
-// These convenience methods are kept for potential future use
-// but properly typed to avoid any type issues
-export async function get<T = unknown>(url: string): Promise<T> {
-  const response = await httpClient.get<T>(url);
-  return response.data;
-}
-
-export async function post<T = unknown>(url: string, data?: unknown): Promise<T> {
-  const response = await httpClient.post<T>(url, data);
-  return response.data;
-}
-
 // Export the axios instance for advanced usage
 export default httpClient;

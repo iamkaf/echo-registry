@@ -11,6 +11,7 @@ export async function GET() {
     timestamp: formatApiTimestamp(),
     cache_status: 'connected',
     external_apis: {},
+    success: true, // Health endpoint success based on request success
   };
 
   try {
@@ -63,7 +64,7 @@ export async function GET() {
 
     return NextResponse.json(healthResponse);
   } catch {
-    const errorResponse = { ...healthResponse, status: 'down' };
+    const errorResponse = { ...healthResponse, status: 'down', success: false };
     return NextResponse.json(errorResponse, { status: 500 });
   }
 }

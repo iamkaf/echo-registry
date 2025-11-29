@@ -52,7 +52,8 @@ Response format:
     }
   },
   "timestamp": "2025-01-XX...",
-  "cached_at": "2025-01-XX..."
+  "cached_at": "2025-01-XX...",
+  "success": true
 }
 
 ## What Dependencies Are Available:
@@ -65,12 +66,19 @@ All endpoints return JSON with this structure:
 {
   "data": { ... },
   "timestamp": "2025-01-XX...",
-  "cached_at": "2025-01-XX..."
+  "cached_at": "2025-01-XX...",
+  "success": true
 }
 
 For dependency endpoints, data includes:
 - mc_version: The Minecraft version
 - dependencies: Array of objects with name, version, loader, source_url, download_urls
+
+## Success Field:
+All API responses include a required "success" boolean field:
+- "success": true - Request completed successfully and contains data
+- "success": false - Request failed and contains an error message
+- Health endpoint: "success": true for HTTP 200, "success": false for server errors
 
 ## Rate Limiting & Caching:
 - Responses are cached to reduce external API load
@@ -80,7 +88,7 @@ For dependency endpoints, data includes:
 ## Error Handling:
 - 400: Bad request (invalid parameters)
 - 500: Server error (external service issues)
-- All errors include descriptive message and timestamp
+- All error responses include "success": false, descriptive message and timestamp
 
 ## Production Usage:
 Deployed at: https://echo.iamkaf.com

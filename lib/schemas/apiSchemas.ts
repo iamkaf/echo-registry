@@ -96,6 +96,7 @@ export const HealthResponseSchema = z.object({
   timestamp: z.string().datetime('Invalid timestamp format'),
   cache_status: z.enum(['connected', 'disconnected', 'error']),
   external_apis: z.record(z.string(), z.enum(['ok', 'error'])),
+  success: z.boolean(),
 });
 
 /**
@@ -108,6 +109,7 @@ export const ApiResponseSchema = <T>(dataSchema: z.ZodType<T>) =>
     error: z.string().optional(),
     cached_at: z.string().optional(),
     timestamp: z.string().datetime('Invalid timestamp format'),
+    success: z.boolean(),
   });
 
 /**
@@ -140,6 +142,7 @@ export const MinecraftVersionsResponseSchema = ApiResponseSchema(
 export const ErrorResponseSchema = z.object({
   error: z.string().min(1, 'Error message cannot be empty'),
   timestamp: z.string().datetime('Invalid timestamp format'),
+  success: z.literal(false),
 });
 
 /**

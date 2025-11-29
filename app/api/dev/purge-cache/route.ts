@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
+import { formatApiTimestamp } from '@/lib/utils/dateUtils';
 
 export async function POST() {
   // Only allow in development
   if (process.env.NODE_ENV !== 'development') {
     return NextResponse.json(
-      { error: 'This endpoint is only available in development mode' },
+      {
+        error: 'This endpoint is only available in development mode',
+        timestamp: formatApiTimestamp(),
+        success: false,
+      },
       { status: 403 },
     );
   }
@@ -24,7 +29,8 @@ export async function POST() {
     return NextResponse.json({
       message: 'Cache purged successfully',
       deleted_entries: deletedEntries,
-      timestamp: new Date().toISOString(),
+      timestamp: formatApiTimestamp(),
+      success: true,
     });
   } catch (error) {
     console.error('Error purging cache:', error);
@@ -32,6 +38,8 @@ export async function POST() {
       {
         error: 'Failed to purge cache',
         details: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: formatApiTimestamp(),
+        success: false,
       },
       { status: 500 },
     );

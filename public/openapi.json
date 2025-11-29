@@ -277,6 +277,7 @@
       },
       "ApiResponse": {
         "type": "object",
+        "required": ["success", "timestamp"],
         "properties": {
           "data": {
             "description": "Response data"
@@ -294,6 +295,10 @@
             "type": "string",
             "format": "date-time",
             "description": "Cache timestamp"
+          },
+          "success": {
+            "type": "boolean",
+            "description": "Whether the request was successful"
           }
         }
       },
@@ -320,7 +325,8 @@
                   "enum": ["ok", "error"]
                 }
               }
-            }
+            },
+            "required": ["status", "cache_status", "external_apis"]
           }
         ]
       },

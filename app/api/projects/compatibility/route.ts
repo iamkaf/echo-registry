@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ApiResponse } from '@/types/dependency';
 import { DependencyService } from '@/lib/services/dependencyService';
-import { formatApiTimestamp } from '@/lib/utils/dateUtils';
 import { validateProjectCompatibilityQuery, ValidationError } from '@/lib/schemas/apiSchemas';
+import { createErrorResponse, createCachedResponse } from '@/lib/utils/responseUtils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,26 +12,17 @@ export async function GET(request: NextRequest) {
 
     // Validate required parameters
     if (!projectsParam && !versionsParam) {
-      const errorResponse: ApiResponse<null> = {
-        error: 'Both projects and versions parameters are required',
-        timestamp: formatApiTimestamp(),
-      };
+      const errorResponse = createErrorResponse('Both projects and versions parameters are required');
       return NextResponse.json(errorResponse, { status: 400 });
     }
 
     if (!projectsParam) {
-      const errorResponse: ApiResponse<null> = {
-        error: 'Projects parameter is required',
-        timestamp: formatApiTimestamp(),
-      };
+      const errorResponse = createErrorResponse('Projects parameter is required');
       return NextResponse.json(errorResponse, { status: 400 });
     }
 
     if (!versionsParam) {
-      const errorResponse: ApiResponse<null> = {
-        error: 'Versions parameter is required',
-        timestamp: formatApiTimestamp(),
-      };
+      const errorResponse = createErrorResponse('Versions parameter is required');
       return NextResponse.json(errorResponse, { status: 400 });
     }
 
@@ -42,11 +32,7 @@ export async function GET(request: NextRequest) {
     const dependencyService = new DependencyService();
     const projectCompatibility = await dependencyService.checkLoadersForProjects(projects, versions);
 
-    const response: ApiResponse<Record<string, Record<string, string[]>>> = {
-      data: projectCompatibility,
-      timestamp: formatApiTimestamp(),
-      cached_at: formatApiTimestamp(),
-    };
+    const response = createCachedResponse(projectCompatibility);
 
     return NextResponse.json(response);
   } catch (error) {
@@ -54,17 +40,13 @@ export async function GET(request: NextRequest) {
 
     // Enhanced error handling for validation errors
     if (error instanceof ValidationError) {
-      const errorResponse: ApiResponse<null> = {
-        error: `Validation error: ${error.message}`,
-        timestamp: formatApiTimestamp(),
-      };
+      const errorResponse = createErrorResponse(`Validation error: ${error.message}`);
       return NextResponse.json(errorResponse, { status: 400 });
     }
 
-    const errorResponse: ApiResponse<null> = {
-      error: error instanceof Error ? error.message : 'Unknown error occurred',
-      timestamp: formatApiTimestamp(),
-    };
+    const errorResponse = createErrorResponse(
+      error instanceof Error ? error.message : 'Unknown error occurred',
+    );
 
     return NextResponse.json(errorResponse, { status: 500 });
   }

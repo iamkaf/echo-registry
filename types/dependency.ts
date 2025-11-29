@@ -29,6 +29,7 @@ export interface ApiResponse<T> {
   error?: string;
   cached_at?: string;
   timestamp: string;
+  success: boolean;
 }
 
 // Health check response
@@ -37,6 +38,7 @@ export interface HealthResponse {
   timestamp: string;
   cache_status: 'connected' | 'disconnected' | 'error';
   external_apis: Record<string, 'ok' | 'error'>;
+  success: boolean;
 }
 
 // Cache database models (Supabase)

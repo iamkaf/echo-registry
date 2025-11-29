@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CacheService } from '@/lib/services/cacheService';
+import { formatApiTimestamp } from '@/lib/utils/dateUtils';
 
 // This endpoint is for cron jobs to clean up expired cache entries
 export async function POST(request: NextRequest) {
@@ -13,7 +14,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: 'Unauthorized',
-          timestamp: new Date().toISOString(),
+          timestamp: formatApiTimestamp(),
+          success: false,
         },
         { status: 401 },
       );
@@ -26,8 +28,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: 'Cache cleanup completed successfully',
-      timestamp: new Date().toISOString(),
+      timestamp: formatApiTimestamp(),
       stats,
+      success: true,
     });
   } catch (error) {
     console.error('Error during cache cleanup:', error);
@@ -35,7 +38,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Unknown error occurred',
-        timestamp: new Date().toISOString(),
+        timestamp: formatApiTimestamp(),
+        success: false,
       },
       { status: 500 },
     );

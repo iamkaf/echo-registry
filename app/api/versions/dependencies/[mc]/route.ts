@@ -19,10 +19,15 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const projectsParam = searchParams.get('projects');
     const customProjects = validateProjectsQuery(projectsParam || undefined);
 
+    // Always include fabric-api in the projects list
+    const allProjects = customProjects.includes('fabric-api')
+      ? customProjects
+      : [...customProjects, 'fabric-api'];
+
     const dependencyService = new DependencyService();
     const dependencies = await dependencyService.fetchAllDependencies(
       validatedMcVersion,
-      customProjects,
+      allProjects,
     );
 
     const response = createCachedResponse({

@@ -1,14 +1,18 @@
 import { z } from 'zod';
 import { DependencyVersion, VersionedProjectCompatibility } from '@/types/dependency';
+import { isValidMinecraftVersion } from 'minecraft-version-validator';
 
 /**
  * Minecraft version parameter validation
- * Accepts versions like "1.21.1", "1.20", "1.20.4", etc.
+ * Uses minecraft-version-validator for comprehensive version format support
+ * Supports releases, snapshots, pre-releases, and legacy formats
  */
 export const MinecraftVersionParamSchema = z.object({
   mc: z
     .string()
-    .regex(/^\d+\.\d+(\.\d+)?$/, 'Invalid Minecraft version format. Expected format: x.y or x.y.z')
+    .refine((val) => isValidMinecraftVersion(val), {
+      message: 'Invalid Minecraft version format',
+    })
     .min(1, 'Minecraft version cannot be empty'),
 });
 
@@ -159,7 +163,7 @@ export function validateMinecraftVersion(mcVersion: string): string {
     const errorMessage =
       result.error.issues && result.error.issues.length > 0
         ? result.error.issues[0]?.message
-        : 'Invalid Minecraft version format. Expected format: x.y or x.y.z';
+        : 'Invalid Minecraft version format';
     throw new ValidationError(errorMessage);
   }
   return result.data.mc;

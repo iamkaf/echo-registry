@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { DependencyVersion } from '@/types/dependency';
 import VersionTableSkeleton from './VersionTableSkeleton';
 
@@ -6,38 +7,39 @@ interface VersionTableProps {
   isLoading?: boolean;
 }
 
+// Hoist static arrays to module scope for better performance
+const BUILD_TOOLS_SET = new Set([
+  'forge',
+  'neoforge',
+  'fabric-loader'
+]);
+
+const DEV_TOOLS_SET = new Set([
+  'parchment',
+  'neoform',
+  'moddev-gradle',
+  'forgegradle',
+  'loom'
+]);
+
+const MODS_SET = new Set([
+  'amber',
+  'fabric-api',
+  'modmenu',
+  'rei',
+  'architectury-api',
+  'forge-config-api-port'
+]);
+
 // Helper function to categorize dependencies and get border colors
 const getDependencyBorderColor = (dependencyName: string): string => {
-  const buildTools = [
-    'forge',
-    'neoforge',
-    'fabric-loader'
-  ];
-
-  const devTools = [
-    'parchment',
-    'neoform',
-    'moddev-gradle',
-    'forgegradle',
-    'loom'
-  ];
-
-  const mods = [
-    'amber',
-    'fabric-api',
-    'modmenu',
-    'rei',
-    'architectury-api',
-    'forge-config-api-port'
-  ];
-
   const normalizedName = dependencyName.toLowerCase();
 
-  if (buildTools.includes(normalizedName)) {
+  if (BUILD_TOOLS_SET.has(normalizedName)) {
     return 'border-2 border-blue-400 hover:border-blue-500';
-  } else if (devTools.includes(normalizedName)) {
+  } else if (DEV_TOOLS_SET.has(normalizedName)) {
     return 'border-2 border-purple-400 hover:border-purple-500';
-  } else if (mods.includes(normalizedName)) {
+  } else if (MODS_SET.has(normalizedName)) {
     return 'border-2 border-green-400 hover:border-green-500';
   } else {
     return 'border-2 border-gray-300 hover:border-gray-400';
@@ -96,8 +98,8 @@ const VersionDisplay = ({ version, fallback_used }: { version: string | null, fa
   );
 };
 
-// Helper component for individual dependency card
-const DependencyCard = ({ dependency }: { dependency: DependencyVersion }) => {
+// Helper component for individual dependency card (memoized to prevent unnecessary re-renders)
+const DependencyCard = memo(({ dependency }: { dependency: DependencyVersion }) => {
   const borderColorClass = getDependencyBorderColor(dependency.name);
 
   return (
@@ -157,7 +159,7 @@ const DependencyCard = ({ dependency }: { dependency: DependencyVersion }) => {
       </div>
     </div>
   );
-};
+});
 
 export default function VersionTable({ dependencies, isLoading = false }: VersionTableProps) {
   // Show skeleton when loading

@@ -8,15 +8,23 @@ import {
 import { createErrorResponse, createCachedResponse } from '@/lib/utils/responseUtils';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ mc: string }> }) {
-  const { mc: mcVersion } = await params;
+  // Declare outside try block for error logging
+  let mcVersion: string = 'unknown';
+  let url: URL = new URL(request.url);
 
   try {
+    // Start promises early, await late (eliminate waterfall)
+    const mcVersionPromise = params.then(p => p.mc);
+    const urlPromise = Promise.resolve(new URL(request.url));
+
+    // Await in parallel where possible
+    [mcVersion, url] = await Promise.all([mcVersionPromise, urlPromise]);
+
     // Validate Minecraft version parameter
     const validatedMcVersion = validateMinecraftVersion(mcVersion);
 
     // Get custom projects from query parameters
-    const { searchParams } = new URL(request.url);
-    const projectsParam = searchParams.get('projects');
+    const projectsParam = url.searchParams.get('projects');
     const customProjects = validateProjectsQuery(projectsParam || undefined);
 
     // Always include fabric-api in the projects list

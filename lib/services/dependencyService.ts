@@ -590,6 +590,52 @@ export class DependencyService {
       .map((result) => result.value);
   }
 
+  // Validate that query-supplied projects are real Modrinth projects by reading
+  // the same Modrinth version endpoint responses used for dependency resolution.
+  async findInvalidModrinthProjects(projects: string[], mcVersion: string): Promise<string[]> {
+    const uniqueProjects = [...new Set(projects.map((project) => project.trim()).filter(Boolean))];
+    if (uniqueProjects.length === 0) return [];
+
+    const invalidProjects: string[] = [];
+    const encodedVersions = encodeURIComponent(JSON.stringify([mcVersion]));
+
+    const validationResults = await Promise.allSettled(
+      uniqueProjects.map(async (project) => {
+        const url = `${API_URLS.MODRINTH_API}/${encodeURIComponent(project)}/version?game_versions=${encodedVersions}`;
+        const response = await fetchWithTimeout(url);
+
+        if (response.status === 404) {
+          return project;
+        }
+
+        if (!response.ok) {
+          throw new Error(
+            `Unable to validate project "${project}" with Modrinth (status ${response.status})`,
+          );
+        }
+
+        // 200 with array (including empty) means this is a valid Modrinth project slug.
+        const payload: unknown = await response.json();
+        if (!Array.isArray(payload)) {
+          throw new Error(`Unexpected Modrinth response while validating project "${project}"`);
+        }
+
+        return null;
+      }),
+    );
+
+    validationResults.forEach((result) => {
+      if (result.status === 'rejected') {
+        throw result.reason;
+      }
+      if (result.value) {
+        invalidProjects.push(result.value);
+      }
+    });
+
+    return invalidProjects;
+  }
+
   // Create error version entry
   private createErrorVersion(name: string, mcVersion: string, error: string): DependencyVersion {
     const loader = LOADER_MAPPING[name] || 'universal';

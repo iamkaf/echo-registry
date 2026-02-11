@@ -26,13 +26,26 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     // Get custom projects from query parameters
     const projectsParam = url.searchParams.get('projects');
     const customProjects = validateProjectsQuery(projectsParam || undefined);
+    const dependencyService = new DependencyService();
+
+    if (customProjects.length > 0) {
+      const invalidProjects = await dependencyService.findInvalidModrinthProjects(
+        customProjects,
+        validatedMcVersion,
+      );
+      if (invalidProjects.length > 0) {
+        const errorResponse = createErrorResponse(
+          `Invalid projects parameter. These are not valid Modrinth projects: ${invalidProjects.join(', ')}. The ?projects query only accepts Modrinth project slugs (for example: fabric-api, modmenu, sodium).`,
+        );
+        return NextResponse.json(errorResponse, { status: 400 });
+      }
+    }
 
     // Always include fabric-api in the projects list
     const allProjects = customProjects.includes('fabric-api')
       ? customProjects
       : [...customProjects, 'fabric-api'];
 
-    const dependencyService = new DependencyService();
     const dependencies = await dependencyService.fetchAllDependencies(
       validatedMcVersion,
       allProjects,

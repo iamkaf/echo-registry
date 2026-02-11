@@ -27,6 +27,8 @@ Examples:
 - GET /api/versions/dependencies/1.21.1?projects=fabric-api,modmenu
 
 The optional ?projects parameter lets you fetch specific mods instead of all available dependencies.
+If any value in ?projects is not a valid Modrinth project slug, the endpoint returns HTTP 400 with a message listing the invalid values.
+Do not pass built-in dependencies (`forge`, `neoforge`, `fabric-loader`, `parchment`, `neoform`, `moddev-gradle`, `forgegradle`, `loom`) in ?projects; they are always included automatically.
 
 ### 4. Check Project Compatibility
 GET /api/projects/compatibility?projects={projects}&versions={versions}

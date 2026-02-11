@@ -41,4 +41,15 @@ describe('Dependencies API Integration', () => {
     // Verify the timestamp is a valid ISO string
     expect(data.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
   });
+
+  it('should return 400 when projects includes non-Modrinth values', async () => {
+    const response = await fetch('http://localhost:3000/api/versions/dependencies/1.21.1?projects=forge');
+
+    expect(response.status).toBe(400);
+
+    const data = await response.json();
+    expect(data).toHaveProperty('error');
+    expect(data.error).toContain('Invalid projects parameter');
+    expect(data.error).toContain('forge');
+  });
 });

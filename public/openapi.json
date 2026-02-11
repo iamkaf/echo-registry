@@ -84,7 +84,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Comma-separated list of additional Modrinth projects to include",
+            "description": "Comma-separated list of additional Modrinth project slugs to include. Returns 400 if any value is not a valid Modrinth project slug.",
             "example": "fabric-api,modmenu,rei"
           }
         ],
@@ -98,6 +98,9 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid parameters (e.g., one or more projects are not valid Modrinth project slugs)"
           },
           "500": {
             "description": "Failed to fetch dependencies"

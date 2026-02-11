@@ -54,6 +54,21 @@ export function extractMinorVersion(mcVersion: string): string {
   }
 }
 
+// Check whether a version starts with a prefix on a segment boundary.
+// Example: prefix "21.1" matches "21.1.219" but not "21.11.38-beta".
+export function matchesVersionPrefix(prefix: string, version: string): boolean {
+  if (!version.startsWith(prefix)) {
+    return false;
+  }
+
+  if (version.length === prefix.length) {
+    return true;
+  }
+
+  const nextChar = version.charAt(prefix.length);
+  return nextChar === '.' || nextChar === '-';
+}
+
 // Generate intelligent fallback versions for Parchment
 export function generateParchmentFallbackVersions(mcVersion: string): string[] {
   const versions: string[] = [mcVersion]; // Start with requested version
@@ -139,7 +154,7 @@ export function sortVersionsSemantically(versions: string[]): string[] {
 
 export function getAppVersion(): string {
   // Get version from package.json during build time
-  return process.env.NEXT_PUBLIC_APP_VERSION || '0.5.0';
+  return process.env.NEXT_PUBLIC_APP_VERSION || '0.7.1';
 }
 
 export function getGitCommit(): string {

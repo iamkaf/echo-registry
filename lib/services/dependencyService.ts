@@ -3,6 +3,7 @@ import { API_URLS, LOADER_MAPPING, BUILT_IN_DEPENDENCIES } from '../utils/consta
 import {
   isDependencyCompatible,
   extractMinorVersion,
+  matchesVersionPrefix,
   generateParchmentFallbackVersions,
   sortVersionsSemantically,
 } from '../utils/versionUtils';
@@ -163,7 +164,7 @@ export class DependencyService {
     const metadata = parseMavenMetadata(xml);
 
     const prefix = extractMinorVersion(mcVersion);
-    const filteredVersions = metadata.versions.filter((v) => v.startsWith(prefix));
+    const filteredVersions = metadata.versions.filter((v) => matchesVersionPrefix(prefix, v));
 
     if (filteredVersions.length === 0) {
       throw new Error('No NeoForge version found');

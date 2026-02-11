@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { parseMcVersion, isVersionCompatible, extractMinorVersion, generateParchmentFallbackVersions, sortVersionsSemantically } from '../lib/utils/versionUtils';
+import {
+  parseMcVersion,
+  isVersionCompatible,
+  extractMinorVersion,
+  matchesVersionPrefix,
+  generateParchmentFallbackVersions,
+  sortVersionsSemantically,
+} from '../lib/utils/versionUtils';
 
 describe('parseMcVersion', () => {
   it('should parse standard version format', () => {
@@ -95,6 +102,19 @@ describe('generateParchmentFallbackVersions', () => {
   it('should handle invalid format gracefully', () => {
     const fallbacks = generateParchmentFallbackVersions('invalid');
     expect(fallbacks).toEqual(['invalid']); // just return original
+  });
+});
+
+describe('matchesVersionPrefix', () => {
+  it('should match exact version prefix and boundary-separated versions', () => {
+    expect(matchesVersionPrefix('21.1', '21.1')).toBe(true);
+    expect(matchesVersionPrefix('21.1', '21.1.219')).toBe(true);
+    expect(matchesVersionPrefix('21.1', '21.1.219-beta')).toBe(true);
+  });
+
+  it('should not match versions that only share numeric text prefix', () => {
+    expect(matchesVersionPrefix('21.1', '21.11.38-beta')).toBe(false);
+    expect(matchesVersionPrefix('21.1', '121.1.0')).toBe(false);
   });
 });
 

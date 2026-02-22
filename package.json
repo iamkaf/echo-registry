@@ -1,45 +1,36 @@
 {
   "name": "echo-registry",
-  "version": "0.7.2",
+  "version": "0.8.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "wrangler deploy",
+    "type-check": "tsc --noEmit",
     "lint": "eslint",
-    "format": "prettier --write .",
-    "test": "vitest",
-    "test:run": "vitest run",
-    "check": "npm run type-check && npm run lint && npm run test:run",
-    "type-check": "npx tsc --noEmit"
+    "format": "prettier --write ."
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.87.1",
-    "axios": "^1.13.2",
-    "date-fns": "^4.1.0",
     "fast-xml-parser": "^5.3.2",
+    "hono": "^4.7.0",
     "minecraft-version-validator": "^1.0.1",
-    "next": "16.0.10",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "zod": "^4.1.13",
     "zustand": "^5.0.9"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.0",
-    "@types/node": "^25",
+    "@cloudflare/vite-plugin": "^1",
+    "@cloudflare/workers-types": "^4",
+    "@tailwindcss/vite": "^4",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/xml2js": "^0.4.14",
-    "baseline-browser-mapping": "^2.9.6",
-    "eslint": "^9",
-    "eslint-config-next": "16.0.10",
-    "jsdom": "^27.3.0",
-    "prettier": "^3.7.4",
+    "@vitejs/plugin-react": "^4",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^4.0.15"
+    "vite": "^6",
+    "wrangler": "^4"
   }
 }

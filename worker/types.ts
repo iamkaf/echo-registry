@@ -26,7 +26,6 @@ export interface DependencyVersion {
 export interface MinecraftVersion {
   id: string;
   version_type: "release" | "snapshot" | "old_beta" | "old_alpha";
-  release_time: string;
 }
 
 // Versioned project compatibility response

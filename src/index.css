@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/* Fallback font with metrics matched to Inter, so text doesn't shift when Inter loads */
+@font-face {
+  font-family: "Inter Fallback";
+  src: local("Arial");
+  size-adjust: 107.64%;
+  ascent-override: 90.44%;
+  descent-override: 22.52%;
+  line-gap-override: 0%;
+}
+
 @theme {
   --color-canvas: #09090b;
   --color-panel: #18181b;
@@ -14,7 +24,7 @@
   --color-fabric: #fbbf24;
   /* Yellow 400 (Fabric icon color) */
 
-  --font-sans: "Inter", sans-serif;
+  --font-sans: "Inter", "Inter Fallback", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
 }
 

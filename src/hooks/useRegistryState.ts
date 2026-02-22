@@ -13,9 +13,7 @@ export interface DependencyItem {
 
 export interface MinecraftVersion {
   id: string;
-  type: string;
   version_type: string;
-  release_time: string;
 }
 
 export function useRegistryState() {

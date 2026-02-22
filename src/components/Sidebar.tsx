@@ -31,7 +31,7 @@ export function Sidebar({
   moveProject,
 }: SidebarProps) {
   return (
-    <div className="w-full lg:w-80 space-y-6 lg:shrink-0">
+    <div className="w-full lg:w-80 space-y-6 lg:shrink-0 order-2 lg:order-1">
       {/* Version Selection */}
       <div className="glass-panel p-6">
         <VersionSelector

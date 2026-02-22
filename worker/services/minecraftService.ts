@@ -28,7 +28,6 @@ export class MinecraftService {
       const versions: MinecraftVersion[] = manifest.versions.map((v) => ({
         id: v.id,
         version_type: v.type as MinecraftVersion["version_type"],
-        release_time: v.releaseTime,
       }));
 
       // Cache the result

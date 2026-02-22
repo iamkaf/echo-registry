@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useLocalStorage } from 'usehooks-ts';
 
 export interface DependencyItem {
     name: string;
@@ -9,10 +10,25 @@ export interface DependencyItem {
     coordinates?: string;
 }
 
+export interface MinecraftVersion {
+    id: string;
+    type: string;
+    version_type: string;
+    release_time: string;
+}
+
 export function useRegistryState() {
-    const [minecraftVersions, setMinecraftVersions] = useState<string[]>([]);
+    const [minecraftVersions, setMinecraftVersions] = useState<MinecraftVersion[]>([]);
     const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
-    const [projects, setProjects] = useState<string[]>([]);
+
+    // Default to the specific projects requested by user, persisted to localStorage
+    const [projects, setProjects] = useLocalStorage<string[]>('echo-projects', [
+        'amber',
+        'modmenu',
+        'forge-config-api-port',
+        'architectury-api'
+    ]);
+
     const [dependencies, setDependencies] = useState<DependencyItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -23,10 +39,13 @@ export function useRegistryState() {
             .then(res => res.json() as Promise<any>)
             .then(json => {
                 if (json.success && json.data?.versions) {
-                    const fetchedVersions = json.data.versions.map((v: any) => v.id);
+                    const fetchedVersions = json.data.versions;
                     setMinecraftVersions(fetchedVersions);
+
                     if (fetchedVersions.length > 0 && !selectedVersion) {
-                        setSelectedVersion(fetchedVersions[0]);
+                        // Priority 1: Find latest release
+                        const latestRelease = fetchedVersions.find((v: MinecraftVersion) => v.version_type === 'release');
+                        setSelectedVersion(latestRelease ? latestRelease.id : fetchedVersions[0].id);
                     }
                 }
             })
@@ -73,24 +92,22 @@ export function useRegistryState() {
 
     const addProject = (project: string) => {
         if (project && !projects.includes(project)) {
-            setProjects(prev => [...prev, project]);
+            setProjects([...projects, project]);
         }
     };
 
     const removeProject = (project: string) => {
-        setProjects(prev => prev.filter(p => p !== project));
+        setProjects(projects.filter(p => p !== project));
     };
 
     const moveProject = (index: number, direction: 'up' | 'down') => {
-        setProjects(prev => {
-            const newProjects = [...prev];
-            if (direction === 'up' && index > 0) {
-                [newProjects[index - 1], newProjects[index]] = [newProjects[index], newProjects[index - 1]];
-            } else if (direction === 'down' && index < newProjects.length - 1) {
-                [newProjects[index + 1], newProjects[index]] = [newProjects[index], newProjects[index + 1]];
-            }
-            return newProjects;
-        });
+        const newProjects = [...projects];
+        if (direction === 'up' && index > 0) {
+            [newProjects[index - 1], newProjects[index]] = [newProjects[index], newProjects[index - 1]];
+        } else if (direction === 'down' && index < newProjects.length - 1) {
+            [newProjects[index + 1], newProjects[index]] = [newProjects[index], newProjects[index + 1]];
+        }
+        setProjects(newProjects);
     };
 
     const refresh = () => {

@@ -1,21 +1,21 @@
-import { DependencyItem } from '../hooks/useRegistryState';
 import { VersionSelector } from './VersionSelector';
 import { ProjectConfig } from './ProjectConfig';
 import { GradleSnippet } from './GradleSnippet';
 import { ApiSnippet } from './ApiSnippet';
 import { RefreshCw } from 'lucide-react';
+import { MinecraftVersion, DependencyItem } from '../hooks/useRegistryState';
 
 interface SidebarProps {
-    versions: string[];
+    versions: MinecraftVersion[];
     selectedVersion: string | null;
     onVersionChange: (version: string) => void;
     onRefresh: () => void;
     loading: boolean;
     dependencies: DependencyItem[];
     projects: string[];
-    addProject: (project: string) => void;
-    removeProject: (project: string) => void;
-    moveProject: (index: number, direction: 'up' | 'down') => void;
+    addProject: (p: string) => void;
+    removeProject: (p: string) => void;
+    moveProject: (i: number, d: 'up' | 'down') => void;
 }
 
 export function Sidebar({

@@ -57,6 +57,7 @@ export interface HealthResponse {
 
 // Env bindings for Cloudflare Worker
 export interface Env {
+  ASSETS: Fetcher;
   CACHE: KVNamespace;
   CRON_SECRET?: string;
   CACHE_TTL_DEPENDENCIES?: string;

@@ -48,9 +48,13 @@ export function Layout({ children }: LayoutProps) {
       <footer className="border-t border-border mt-auto py-6 bg-canvas">
         <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between text-xs text-text-muted">
           <p>Echo Registry. Powered by Cloudflare Workers KV.</p>
-          <div className="flex items-center gap-1.5 mt-3 sm:mt-0">
-            <Activity className="w-3 h-3" />
-            <span>Systems Normal</span>
+          <div className="flex items-center gap-3 mt-3 sm:mt-0">
+            <span className="font-mono">{__GIT_COMMIT__}</span>
+            <span>·</span>
+            <div className="flex items-center gap-1.5">
+              <Activity className="w-3 h-3" />
+              <span>Systems Normal</span>
+            </div>
           </div>
         </div>
       </footer>

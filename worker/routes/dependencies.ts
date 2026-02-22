@@ -44,11 +44,12 @@ dependencies.get("/:mc", async (c) => {
 
     const deps = await dependencyService.fetchAllDependencies(validatedMcVersion, allProjects);
 
+    const ttl = parseInt(c.env.CACHE_TTL_DEPENDENCIES || "300");
     const response = createCachedResponse({
       mc_version: validatedMcVersion,
       dependencies: deps,
     });
-
+    c.header("Cache-Control", `public, max-age=${ttl}, stale-while-revalidate=${ttl * 2}`);
     return c.json(response);
   } catch (error) {
     console.error(`Error fetching dependencies for MC ${mcVersion}:`, error);

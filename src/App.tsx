@@ -48,7 +48,7 @@ export default function App() {
             <DependencyGrid
               mcVersion={selectedVersion}
               dependencies={dependencies}
-              loading={loading}
+              projectCount={projects.length}
             />
           ) : (
             <div className="text-zinc-500 text-sm font-mono mt-4">

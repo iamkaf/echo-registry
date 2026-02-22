@@ -35,13 +35,15 @@ export function GradleSnippet({ dependencies, mcVersion, loading = false }: Grad
 
   const propertyLines: PropertyLine[] = mcVersion
     ? [
-        { key: "minecraft_version", value: mcVersion, icon: "https://github.com/Mojang.png" },
-        ...orderedDeps.map((dep) => {
-          let keyName = dep.name.replace(/-/g, "_") + "_version";
-          if (dep.name === "fabric-loader") keyName = "fabric_loader_version";
-          if (dep.name === "fabric-api") keyName = "fabric_api_version";
-          return { key: keyName, value: dep.version, icon: dep.icon_url ?? null };
-        }),
+        { key: "minecraft_version", value: mcVersion, icon: "/icons/mojang.png" },
+        ...orderedDeps
+          .filter((dep) => !!dep.version && dep.version !== "N/A")
+          .map((dep) => {
+            let keyName = dep.name.replace(/-/g, "_") + "_version";
+            if (dep.name === "fabric-loader") keyName = "fabric_loader_version";
+            if (dep.name === "fabric-api") keyName = "fabric_api_version";
+            return { key: keyName, value: dep.version as string, icon: dep.icon_url ?? null };
+          }),
       ]
     : [];
 

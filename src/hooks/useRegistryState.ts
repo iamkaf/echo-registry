@@ -4,16 +4,28 @@ import { useLocalStorage } from "usehooks-ts";
 export interface DependencyItem {
   name: string;
   loader: string;
-  version: string;
+  version: string | null;
   mc_version: string;
   source_url?: string;
   coordinates?: string;
   icon_url?: string | null;
+  notes?: string;
+  fallback_used?: boolean;
 }
 
 export interface MinecraftVersion {
   id: string;
   version_type: string;
+}
+
+declare global {
+  interface Window {
+    __prefetch?: {
+      versions?: Promise<any>;
+      deps?: Promise<any>;
+      depsUrl?: string;
+    };
+  }
 }
 
 export function useRegistryState() {
@@ -32,10 +44,12 @@ export function useRegistryState() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Initial load: Fetch Minecraft versions
+  // Initial load: Fetch Minecraft versions — reuse the eagerly-fired promise from index.html
   useEffect(() => {
-    fetch("/api/versions/minecraft")
-      .then((res) => res.json() as Promise<any>)
+    const versionsPromise =
+      window.__prefetch?.versions ?? fetch("/api/versions/minecraft").then((r) => r.json());
+
+    versionsPromise
       .then((json) => {
         if (json.success && json.data?.versions) {
           const fetchedVersions = json.data.versions;
@@ -63,9 +77,14 @@ export function useRegistryState() {
     setError(null);
 
     const query = currentProjects.length > 0 ? `?projects=${currentProjects.join(",")}` : "";
+    const url = `/api/versions/dependencies/${version}${query}`;
 
-    fetch(`/api/versions/dependencies/${version}${query}`)
-      .then((res) => res.json() as Promise<any>)
+    // Reuse the eagerly-fired promise if it matches the requested URL
+    const pf = window.__prefetch;
+    const depsPromise =
+      pf?.depsUrl === url && pf?.deps ? pf.deps : fetch(url).then((r) => r.json());
+
+    depsPromise
       .then((json) => {
         if (json.success && json.data?.dependencies) {
           setDependencies(json.data.dependencies);

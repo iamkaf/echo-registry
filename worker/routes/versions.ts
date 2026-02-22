@@ -10,7 +10,9 @@ versions.get("/minecraft", async (c) => {
     const minecraftService = new MinecraftService(c.env.CACHE);
     const versionList = await minecraftService.fetchMinecraftVersions();
 
+    const ttl = parseInt(c.env.CACHE_TTL_MINECRAFT || "3600");
     const response = createCachedResponse({ versions: versionList });
+    c.header("Cache-Control", `public, max-age=${ttl}, stale-while-revalidate=${ttl * 2}`);
     return c.json(response);
   } catch (error) {
     console.error("Error fetching Minecraft versions:", error);

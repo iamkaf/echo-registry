@@ -36,6 +36,34 @@
 
   <body>
     <div id="root"></div>
+    <!-- Kick off API fetches before React boots to eliminate the sequential waterfall -->
+    <script>
+      (function () {
+        var projects = ["amber", "modmenu", "forge-config-api-port", "architectury-api"];
+        try {
+          var saved = localStorage.getItem("echo-projects");
+          if (saved) projects = JSON.parse(saved);
+        } catch (_) {}
+        var pf = (window.__prefetch = {});
+        pf.versions = fetch("/api/versions/minecraft").then(function (r) {
+          return r.json();
+        });
+        pf.versions.then(function (json) {
+          if (json.success && json.data && json.data.versions) {
+            var latest = json.data.versions.find(function (v) {
+              return v.version_type === "release";
+            });
+            if (latest) {
+              var q = projects.length > 0 ? "?projects=" + projects.join(",") : "";
+              pf.depsUrl = "/api/versions/dependencies/" + latest.id + q;
+              pf.deps = fetch(pf.depsUrl).then(function (r) {
+                return r.json();
+              });
+            }
+          }
+        });
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

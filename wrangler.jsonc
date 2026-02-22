@@ -16,4 +16,9 @@
     "CACHE_TTL_DEPENDENCIES": "300",
     "CACHE_TTL_MINECRAFT": "3600",
   },
+  "routes": [
+    {
+      "pattern": "echo.iamkaf.com", "custom_domain": true
+    }
+  ]
 }

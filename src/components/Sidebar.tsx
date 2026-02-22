@@ -62,8 +62,8 @@ export function Sidebar({
       />
 
       {/* Gradle Properties Snippet */}
-      {!loading && dependencies.length > 0 && (
-        <GradleSnippet dependencies={dependencies} mcVersion={selectedVersion} />
+      {selectedVersion && (
+        <GradleSnippet dependencies={dependencies} mcVersion={selectedVersion} loading={loading} />
       )}
 
       {/* API Request Snippet */}

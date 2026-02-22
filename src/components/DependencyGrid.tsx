@@ -61,11 +61,27 @@ export function DependencyGrid({ mcVersion, dependencies, loading = false }: Dep
                   className={`glass-panel p-4 flex flex-col justify-between group transition-colors ${borderColor}`}
                 >
                   <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <span className="font-medium text-zinc-200 text-sm block">{dep.name}</span>
-                      <span className="text-[11px] text-zinc-500 uppercase tracking-wider block mt-0.5">
-                        {dep.loader}
+                    <div className="flex items-start gap-2 min-w-0">
+                      <span className="w-5 h-5 flex-shrink-0 mt-0.5 flex items-center justify-center">
+                        {dep.icon_url ? (
+                          <img
+                            src={dep.icon_url}
+                            className="w-5 h-5 object-contain rounded-sm"
+                            alt=""
+                            loading="lazy"
+                            width={20}
+                            height={20}
+                          />
+                        ) : (
+                          <Box className="w-4 h-4 text-zinc-600" />
+                        )}
                       </span>
+                      <div className="min-w-0">
+                        <span className="font-medium text-zinc-200 text-sm block">{dep.name}</span>
+                        <span className="text-[11px] text-zinc-500 uppercase tracking-wider block mt-0.5">
+                          {dep.loader}
+                        </span>
+                      </div>
                     </div>
                   </div>
 

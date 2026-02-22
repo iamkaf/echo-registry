@@ -250,6 +250,11 @@
             "type": "string",
             "description": "Source URL for version information"
           },
+          "icon_url": {
+            "type": ["string", "null"],
+            "format": "uri",
+            "description": "Icon URL for the dependency. Local path for built-in dependencies (e.g. /icons/forge.svg), Modrinth CDN URL for Modrinth projects."
+          },
           "download_urls": {
             "type": "object",
             "description": "Download URLs by mod loader (for Modrinth projects)",

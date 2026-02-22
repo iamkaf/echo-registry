@@ -11,6 +11,18 @@ import { parseMavenMetadata, extractVersionTags, findTagContent } from "../utils
 import { CacheService } from "./cacheService";
 import { fetchWithTimeout } from "../utils/httpClient";
 
+// Icon URLs for built-in (non-Modrinth) dependencies
+const BUILT_IN_ICON_URLS: Record<string, string> = {
+  forge: "/icons/forge.svg",
+  neoforge: "/icons/neoforge.svg",
+  "fabric-loader": "/icons/fabric.svg",
+  parchment: "/icons/parchment.svg",
+  neoform: "/icons/neoforge.svg",
+  forgegradle: "/icons/gradle.svg",
+  "moddev-gradle": "/icons/gradle.svg",
+  loom: "/icons/gradle.svg",
+};
+
 // Types for Modrinth API responses
 interface ModrinthFile {
   hashes: {
@@ -29,6 +41,12 @@ interface ModrinthVersion {
   date_published: string;
   loaders: string[];
   files: ModrinthFile[];
+}
+
+interface ModrinthProject {
+  id: string;
+  slug: string;
+  icon_url: string | null;
 }
 
 export class DependencyService {
@@ -144,6 +162,7 @@ export class DependencyService {
       version,
       mc_version: mcVersion,
       source_url: url,
+      icon_url: BUILT_IN_ICON_URLS.forge,
       notes,
       fallback_used: false,
     };
@@ -177,6 +196,7 @@ export class DependencyService {
       version,
       mc_version: mcVersion,
       source_url: url,
+      icon_url: BUILT_IN_ICON_URLS.neoforge,
       fallback_used: false,
     };
   }
@@ -208,6 +228,7 @@ export class DependencyService {
       version: loaderEntry.loader.version,
       mc_version: mcVersion,
       source_url: url,
+      icon_url: BUILT_IN_ICON_URLS["fabric-loader"],
       fallback_used: false,
     };
   }
@@ -219,18 +240,30 @@ export class DependencyService {
   ): Promise<DependencyVersion> {
     const versionJson = JSON.stringify([mcVersion]);
     const encodedVersions = encodeURIComponent(versionJson);
-    const url = `${API_URLS.MODRINTH_API}/${projectSlug}/version?game_versions=${encodedVersions}`;
+    const versionsUrl = `${API_URLS.MODRINTH_API}/${projectSlug}/version?game_versions=${encodedVersions}`;
+    const projectUrl = `${API_URLS.MODRINTH_API}/${projectSlug}`;
 
-    const response = await fetchWithTimeout(url);
-    if (!response.ok) {
+    const [versionsResponse, projectResponse] = await Promise.all([
+      fetchWithTimeout(versionsUrl),
+      fetchWithTimeout(projectUrl).catch(() => null),
+    ]);
+
+    if (!versionsResponse.ok) {
       throw new Error(`No ${projectSlug} versions found for MC version ${mcVersion}`);
     }
 
-    const versions = (await response.json()) as ModrinthVersion[];
+    const versions = (await versionsResponse.json()) as ModrinthVersion[];
 
     if (!Array.isArray(versions) || versions.length === 0) {
       throw new Error(`No ${projectSlug} versions available`);
     }
+
+    const icon_url = projectResponse?.ok
+      ? await projectResponse
+          .json()
+          .then((p: unknown) => (p as ModrinthProject).icon_url ?? null)
+          .catch(() => null)
+      : null;
 
     const { downloadUrls, loaderVersions } =
       this.extractLatestDownloadsAndVersionsByLoader(versions);
@@ -249,6 +282,7 @@ export class DependencyService {
       version: latest.version_number,
       mc_version: mcVersion,
       source_url: `https://modrinth.com/mod/${projectSlug}`,
+      icon_url,
       download_urls: downloadUrls,
       loader_versions: loaderVersions,
       coordinates,
@@ -368,6 +402,7 @@ export class DependencyService {
       version: latestVersion,
       mc_version: mcVersion,
       source_url: "https://maven.neoforged.net/releases/net/neoforged/neoform/",
+      icon_url: BUILT_IN_ICON_URLS.neoform,
       fallback_used: false,
     };
   }
@@ -405,6 +440,7 @@ export class DependencyService {
       version: latestVersion,
       mc_version: mcVersion,
       source_url: "https://maven.minecraftforge.net/net/minecraftforge/gradle/ForgeGradle/",
+      icon_url: BUILT_IN_ICON_URLS.forgegradle,
       notes: "Latest version",
       fallback_used: false,
     };
@@ -443,6 +479,7 @@ export class DependencyService {
       version: latestVersion,
       mc_version: mcVersion,
       source_url: "https://maven.fabricmc.net/net/fabricmc/fabric-loom/",
+      icon_url: BUILT_IN_ICON_URLS.loom,
       notes: "Fabric Loom Gradle plugin (SNAPSHOT)",
       fallback_used: false,
     };
@@ -470,6 +507,7 @@ export class DependencyService {
       version: latestVersion,
       mc_version: mcVersion,
       source_url: "https://maven.neoforged.net/releases/net/neoforged/moddev-gradle/",
+      icon_url: BUILT_IN_ICON_URLS["moddev-gradle"],
       notes: "Version-agnostic Gradle plugin",
       fallback_used: false,
     };
@@ -507,6 +545,7 @@ export class DependencyService {
           version,
           mc_version: currentVersion,
           source_url: `https://maven.parchmentmc.org/org/parchmentmc/data/parchment-${currentVersion}/`,
+          icon_url: BUILT_IN_ICON_URLS.parchment,
           notes: fallbackUsed
             ? `Using Parchment mappings for ${currentVersion} (forwards compatible)`
             : undefined,
@@ -609,6 +648,7 @@ export class DependencyService {
       version: null,
       mc_version: mcVersion,
       source_url: this.getSourceUrl(name),
+      icon_url: BUILT_IN_ICON_URLS[name] ?? null,
       ...(isModrinthProject && { coordinates }),
       notes: `Failed to fetch: ${error}`,
       fallback_used: false,
@@ -630,6 +670,7 @@ export class DependencyService {
       version: "N/A",
       mc_version: mcVersion,
       source_url: this.getSourceUrl(name),
+      icon_url: BUILT_IN_ICON_URLS[name] ?? null,
       ...(isModrinthProject && { coordinates: null }),
       notes: `Not available for Minecraft ${mcVersion}. Requires ${minVersion} or later.`,
       fallback_used: false,

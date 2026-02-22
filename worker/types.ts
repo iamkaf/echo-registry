@@ -5,6 +5,7 @@ export interface DependencyVersion {
   version: string | null;
   mc_version: string;
   source_url: string;
+  icon_url?: string | null;
   download_urls?: {
     forge?: string | null;
     neoforge?: string | null;

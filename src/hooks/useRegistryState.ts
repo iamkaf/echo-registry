@@ -8,6 +8,7 @@ export interface DependencyItem {
   mc_version: string;
   source_url?: string;
   coordinates?: string;
+  icon_url?: string | null;
 }
 
 export interface MinecraftVersion {

@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { Layout } from "./components/Layout";
-import { Hero } from "./components/Hero";
 import { Sidebar } from "./components/Sidebar";
 import { DependencyGrid } from "./components/DependencyGrid";
 import { useRegistryState } from "./hooks/useRegistryState";
@@ -28,8 +27,16 @@ export default function App() {
 
   return (
     <Layout>
-      <Hero />
-      <div className="mt-8 flex flex-col lg:flex-row gap-8 items-start relative max-w-7xl mx-auto w-full">
+      <div className="max-w-7xl mx-auto w-full mb-8 mt-4">
+        <h1 className="text-2xl sm:text-3xl font-semibold text-zinc-50 tracking-tight mb-2">
+          Echo Registry
+        </h1>
+        <p className="text-sm text-zinc-400">
+          Minecraft dependency versions cached globally.
+        </p>
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-8 items-start relative max-w-7xl mx-auto w-full">
         <Sidebar
           versions={minecraftVersions}
           selectedVersion={selectedVersion}

@@ -24,7 +24,10 @@ health.get("/", async (c) => {
 
     // Check external API health with simple requests
     const checks = [
-      { name: "forge", url: "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.xml" },
+      {
+        name: "forge",
+        url: "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.xml",
+      },
       { name: "neoforge", url: "https://maven.neoforged.net" },
       { name: "fabric", url: "https://meta.fabricmc.net" },
       { name: "minecraft", url: "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json" },

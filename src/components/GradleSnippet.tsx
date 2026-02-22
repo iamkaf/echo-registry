@@ -45,8 +45,7 @@ export function GradleSnippet({ dependencies, mcVersion, loading = false }: Grad
       ]
     : [];
 
-  const generatePropertiesText = () =>
-    propertyLines.map((l) => `${l.key}=${l.value}`).join("\n");
+  const generatePropertiesText = () => propertyLines.map((l) => `${l.key}=${l.value}`).join("\n");
 
   const handleCopy = () => {
     navigator.clipboard.writeText(generatePropertiesText());
@@ -62,8 +61,8 @@ export function GradleSnippet({ dependencies, mcVersion, loading = false }: Grad
           <div className="h-6 w-6 bg-zinc-800 rounded" />
         </div>
         <div className="bg-zinc-950 p-3 rounded border border-zinc-800 space-y-2.5">
-          {SKELETON_WIDTHS.map((w, i) => (
-            <div key={i} className="h-3.5 bg-zinc-800/70 rounded" style={{ width: `${w}%` }} />
+          {SKELETON_WIDTHS.map((w) => (
+            <div key={w} className="h-3.5 bg-zinc-800/70 rounded" style={{ width: `${w}%` }} />
           ))}
         </div>
       </div>
@@ -83,9 +82,12 @@ export function GradleSnippet({ dependencies, mcVersion, loading = false }: Grad
         </button>
       </div>
       <div className="bg-zinc-950 p-3 rounded border border-zinc-800 overflow-x-auto text-[13px] leading-relaxed font-mono">
-        {propertyLines.map((line, i) => (
-          <div key={i} className="flex items-center gap-1.5">
-            <span className="w-3.5 h-3.5 flex-shrink-0 flex items-center justify-center select-none" aria-hidden="true">
+        {propertyLines.map((line) => (
+          <div key={line.key} className="flex items-center gap-1.5">
+            <span
+              className="w-3.5 h-3.5 flex-shrink-0 flex items-center justify-center select-none"
+              aria-hidden="true"
+            >
               {line.icon ? (
                 <img
                   src={line.icon}

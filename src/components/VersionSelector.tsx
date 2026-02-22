@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ChevronDown, Check } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { cn } from "../lib/utils";
 
 interface MinecraftVersion {
@@ -41,11 +41,15 @@ export function VersionSelector({
 
   return (
     <div className="relative w-full z-30">
-      <label className="block mb-2 text-xs font-medium text-zinc-400 uppercase tracking-wider">
+      <label
+        htmlFor="version-selector"
+        className="block mb-2 text-xs font-medium text-zinc-400 uppercase tracking-wider"
+      >
         Target Environment
       </label>
 
       <button
+        id="version-selector"
         onClick={() => setIsOpen(!isOpen)}
         disabled={loading || versions.length === 0}
         className={cn(

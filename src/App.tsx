@@ -1,8 +1,10 @@
-import { useEffect } from "react";
 import { Layout } from "./components/Layout";
 import { Sidebar } from "./components/Sidebar";
 import { DependencyGrid } from "./components/DependencyGrid";
 import { useRegistryState } from "./hooks/useRegistryState";
+
+// Fire-and-forget health check at startup — no state, no effect needed
+fetch("/api/health").catch((err) => console.error("Health check failed:", err));
 
 export default function App() {
   const {
@@ -18,11 +20,6 @@ export default function App() {
     error,
     refresh,
   } = useRegistryState();
-
-  // Keep the health check logic running silently in the background
-  useEffect(() => {
-    fetch("/api/health").catch((err) => console.error("Health check failed:", err));
-  }, []);
 
   return (
     <Layout>

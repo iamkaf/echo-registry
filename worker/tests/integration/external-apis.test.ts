@@ -136,54 +136,48 @@ describe("External API Integration", () => {
   // Parchment Maven metadata (with fallback across minor versions)
   // -------------------------------------------------------------------------
 
-  it.concurrent(
-    "Parchment maven-metadata.xml has stable versions for some 1.21.x MC version",
-    async () => {
-      // Mirror the worker's fallback strategy: try 1.21.4, then older minors
-      const candidates = ["1.21.4", "1.21.3", "1.21.2", "1.21.1", "1.21"];
-      let found = false;
+  it.concurrent("Parchment maven-metadata.xml has stable versions for some 1.21.x MC version", async () => {
+    // Mirror the worker's fallback strategy: try 1.21.4, then older minors
+    const candidates = ["1.21.4", "1.21.3", "1.21.2", "1.21.1", "1.21"];
+    let found = false;
 
-      for (const mcVer of candidates) {
-        const url = API_URLS.PARCHMENT_BASE.replace("{version}", mcVer);
-        const res = await fetch(url, { headers: HEADERS });
+    for (const mcVer of candidates) {
+      const url = API_URLS.PARCHMENT_BASE.replace("{version}", mcVer);
+      const res = await fetch(url, { headers: HEADERS });
 
-        if (res.ok) {
-          const { versions } = parseMavenMetadata(await res.text());
-          const stable = versions.filter(
-            (v) => !v.includes("SNAPSHOT") && !v.toLowerCase().includes("nightly"),
-          );
-          if (stable.length > 0) {
-            found = true;
-            break;
-          }
+      if (res.ok) {
+        const { versions } = parseMavenMetadata(await res.text());
+        const stable = versions.filter(
+          (v) => !v.includes("SNAPSHOT") && !v.toLowerCase().includes("nightly"),
+        );
+        if (stable.length > 0) {
+          found = true;
+          break;
         }
       }
+    }
 
-      expect(found, "No stable Parchment versions found for any 1.21.x candidate").toBe(true);
-    },
-  );
+    expect(found, "No stable Parchment versions found for any 1.21.x candidate").toBe(true);
+  });
 
   // -------------------------------------------------------------------------
   // Forge HTML index (regex scraping)
   // -------------------------------------------------------------------------
 
-  it.concurrent(
-    "Forge HTML index has extractable Recommended and Latest version strings",
-    async () => {
-      const url = `${API_URLS.FORGE_BASE}/index_${MC_VERSION}.html`;
-      const res = await fetch(url, { headers: HEADERS });
-      expect(res.status).toBe(200);
+  it.concurrent("Forge HTML index has extractable Recommended and Latest version strings", async () => {
+    const url = `${API_URLS.FORGE_BASE}/index_${MC_VERSION}.html`;
+    const res = await fetch(url, { headers: HEADERS });
+    expect(res.status).toBe(200);
 
-      const html = await res.text();
+    const html = await res.text();
 
-      // Replicate the exact regexes from dependencyService.ts
-      const recommendedMatch = /Recommended:\s*([0-9.]+)/.exec(html);
-      const latestMatch = /Latest:\s*([0-9.]+)/.exec(html);
+    // Replicate the exact regexes from dependencyService.ts
+    const recommendedMatch = /Recommended:\s*([0-9.]+)/.exec(html);
+    const latestMatch = /Latest:\s*([0-9.]+)/.exec(html);
 
-      expect(recommendedMatch).not.toBeNull();
-      expect(latestMatch).not.toBeNull();
-      expect(recommendedMatch![1]).toMatch(/^\d+\.\d+\.\d/);
-      expect(latestMatch![1]).toMatch(/^\d+\.\d+\.\d/);
-    },
-  );
+    expect(recommendedMatch).not.toBeNull();
+    expect(latestMatch).not.toBeNull();
+    expect(recommendedMatch![1]).toMatch(/^\d+\.\d+\.\d/);
+    expect(latestMatch![1]).toMatch(/^\d+\.\d+\.\d/);
+  });
 });

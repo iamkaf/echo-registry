@@ -24,7 +24,5 @@ app.route("/api/versions/dependencies", dependencies);
 app.route("/api/projects/compatibility", compatibility);
 app.route("/api/health", health);
 
-// Fall through to static assets for everything else
-app.get("*", (c) => c.env.ASSETS.fetch(c.req.raw));
 
 export default app;

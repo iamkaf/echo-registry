@@ -16,13 +16,12 @@ export default function App() {
     dependencies,
     loading,
     error,
-    refresh
+    refresh,
   } = useRegistryState();
 
   // Keep the health check logic running silently in the background
   useEffect(() => {
-    fetch("/api/health")
-      .catch((err) => console.error("Health check failed:", err));
+    fetch("/api/health").catch((err) => console.error("Health check failed:", err));
   }, []);
 
   return (
@@ -55,7 +54,9 @@ export default function App() {
               loading={loading}
             />
           ) : (
-            <div className="text-zinc-500 text-sm font-mono mt-4">Select a version to view dependencies.</div>
+            <div className="text-zinc-500 text-sm font-mono mt-4">
+              Select a version to view dependencies.
+            </div>
           )}
         </div>
       </div>

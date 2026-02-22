@@ -35,6 +35,7 @@ curl "https://echo.iamkaf.com/api/projects/compatibility?projects=fabric-api,mod
 ## Development
 
 ### Tech Stack
+
 - **Backend:** Cloudflare Workers, Hono
 - **Frontend:** React, Vite, Tailwind v4
 - **Database:** Workers KV

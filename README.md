@@ -2,6 +2,8 @@
 
 Echo Registry provides the latest versions of Forge, NeoForge, Fabric, and popular Minecraft mods through a simple REST API and web interface.
 
+Built to be blazing fast, it runs entirely on **Cloudflare Workers** with **Workers KV** for caching, powered by **Hono** on the backend and **React + Vite** on the frontend.
+
 ## Overview
 
 The service exposes up-to-date version data for core mod loaders, popular mods, and development tools.
@@ -13,29 +15,36 @@ It’s designed for mod developers and automated build systems that need current
 **Mods/APIs** – Fabric API, Mod Menu, REI, JEI, Architectury API, Amber, Forge Config API Port
 **Dev Tools** – Parchment Mappings, NeoForm, ForgeGradle, ModDev Gradle
 
-## API
+## API Endpoints
 
-### Endpoints
-
-- `GET /api/health` – Service health
+- `GET /api/health` – Service health and cache connectivity status
 - `GET /api/versions/minecraft` – All supported Minecraft versions
-- `GET /api/versions/dependencies/{mcVersion}` – Dependencies for a given Minecraft version
-- `POST /api/versions/dependencies/{mcVersion}` – Bulk dependency lookup
+- `GET /api/versions/dependencies/{mcVersion}` – Built-in dependencies for a given Minecraft version
+- `GET /api/projects/compatibility` – Bulk compatibility checking for custom Modrinth projects
 
 ### Examples
 
 ```bash
-curl https://echo.iamkaf.com/api/versions/dependencies/1.21.1
-curl "https://echo.iamkaf.com/api/versions/dependencies/1.21.1?projects=fabric-api,modmenu"
+# Get all dependencies for Minecraft 1.21.4
+curl https://echo.iamkaf.com/api/versions/dependencies/1.21.4
+
+# Check compatibility with multiple projects
+curl "https://echo.iamkaf.com/api/projects/compatibility?projects=fabric-api,modmenu&versions=1.21.4"
 ```
 
 ## Development
+
+### Tech Stack
+- **Backend:** Cloudflare Workers, Hono
+- **Frontend:** React, Vite, Tailwind v4
+- **Database:** Workers KV
+- **Tooling:** TypeScript (`tsgo`), Oxlint, Oxfmt
 
 ### Requirements
 
 - Node.js 22+
 - npm
-- Supabase account
+- Cloudflare account with Workers access
 
 ### Setup
 
@@ -45,39 +54,39 @@ cd echo-registry
 npm install
 ```
 
-1. Create a Supabase project and run `supabase-schema.sql`.
-2. Copy `.env.local.example` to `.env.local` and fill in your credentials.
-3. Start the dev server:
-
+1. Create a Workers KV namespace:
+   ```bash
+   npx wrangler kv namespace create CACHE
+   ```
+2. Update `wrangler.jsonc` and replace the `id` under `kv_namespaces` with your new namespace ID.
+3. Start the Vite development server (which emulates the Worker locally):
    ```bash
    npm run dev
    ```
+4. Visit [http://localhost:5173](http://localhost:5173) (or whatever port Vite assigns).
 
-4. Visit [http://localhost:3000](http://localhost:3000)
+### Tooling Commands
 
-## Environment Variables
+- `npm run dev`: Start the local dev server
+- `npm run build`: Build the SSR bundle and client SPA
+- `npm run typecheck`: Run TSGO type checking
+- `npm run lint`: Run Oxlint
+- `npm run format`: Format code with Oxfmt
 
-```bash
-NEXT_PUBLIC_SUPABASE_URL=your_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_key
-CACHE_TTL_DEPENDENCIES=300000
-CACHE_TTL_MINECRAFT=3600000
-HTTP_TIMEOUT=30000
-USER_AGENT=EchoRegistry/1.0
-```
+## Configuration
+
+Configuration is managed in `wrangler.jsonc`. Variables available:
+
+- `CACHE_TTL_DEPENDENCIES`: Time (in seconds) to cache dependency queries (default: `300`).
+- `CACHE_TTL_MINECRAFT`: Time (in seconds) to cache the Minecraft manifest (default: `3600`).
 
 ## Deployment
 
-Deploy to Vercel:
+Deploy directly to Cloudflare Workers:
 
 ```bash
-npx vercel
-npx vercel --prod
+npm run deploy
 ```
-
-Add your Supabase credentials in the Vercel dashboard.
-A cron job removes expired cache entries every six hours (`CRON_SECRET` required).
 
 ## License
 

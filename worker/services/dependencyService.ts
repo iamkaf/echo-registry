@@ -13,14 +13,13 @@ import { fetchWithTimeout } from "../utils/httpClient";
 
 // Icon URLs for built-in (non-Modrinth) dependencies
 const BUILT_IN_ICON_URLS: Record<string, string> = {
-  forge: "/icons/forge.svg",
-  neoforge: "/icons/neoforge.svg",
-  "fabric-loader": "/icons/fabric.svg",
-  parchment: "/icons/parchment.svg",
-  neoform: "/icons/neoforge.svg",
-  forgegradle: "/icons/gradle.svg",
-  "moddev-gradle": "/icons/gradle.svg",
-  loom: "/icons/gradle.svg",
+  forge: "https://github.com/MinecraftForge.png",
+  neoforge: "https://github.com/Neoforged.png",
+  parchment: "https://parchmentmc.org/assets/img/logo.png",
+  neoform: "https://github.com/Neoforged.png",
+  forgegradle: "https://github.com/MinecraftForge.png",
+  "moddev-gradle": "https://github.com/Neoforged.png",
+  // fabric-loader and loom: fetched from Modrinth fabric-api project
 };
 
 // Types for Modrinth API responses
@@ -205,7 +204,11 @@ export class DependencyService {
   private async fetchFabricLoader(mcVersion: string): Promise<DependencyVersion> {
     const url = `${API_URLS.FABRIC_LOADER}/${mcVersion}`;
 
-    const response = await fetchWithTimeout(url);
+    const [response, fabricApiProject] = await Promise.all([
+      fetchWithTimeout(url),
+      fetchWithTimeout(`${API_URLS.MODRINTH_API}/fabric-api`).catch(() => null),
+    ]);
+
     if (!response.ok) {
       throw new Error(`No Fabric loader found for MC version ${mcVersion}`);
     }
@@ -222,13 +225,20 @@ export class DependencyService {
       throw new Error("Invalid Fabric loader response structure");
     }
 
+    const icon_url: string | null = fabricApiProject?.ok
+      ? await fabricApiProject
+          .json()
+          .then((p: unknown) => (p as ModrinthProject).icon_url ?? null)
+          .catch(() => null)
+      : null;
+
     return {
       name: "fabric-loader",
       loader: "fabric",
       version: loaderEntry.loader.version,
       mc_version: mcVersion,
       source_url: url,
-      icon_url: BUILT_IN_ICON_URLS["fabric-loader"],
+      icon_url,
       fallback_used: false,
     };
   }
@@ -473,13 +483,23 @@ export class DependencyService {
     const sortedVersions = sortVersionsSemantically(snapshotVersions);
     const latestVersion = sortedVersions[sortedVersions.length - 1];
 
+    const fabricApiProject = await fetchWithTimeout(`${API_URLS.MODRINTH_API}/fabric-api`).catch(
+      () => null,
+    );
+    const icon_url: string | null = fabricApiProject?.ok
+      ? await fabricApiProject
+          .json()
+          .then((p: unknown) => (p as ModrinthProject).icon_url ?? null)
+          .catch(() => null)
+      : null;
+
     return {
       name: "loom",
       loader: "fabric",
       version: latestVersion,
       mc_version: mcVersion,
       source_url: "https://maven.fabricmc.net/net/fabricmc/fabric-loom/",
-      icon_url: BUILT_IN_ICON_URLS.loom,
+      icon_url,
       notes: "Fabric Loom Gradle plugin (SNAPSHOT)",
       fallback_used: false,
     };

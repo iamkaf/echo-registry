@@ -1,11 +1,28 @@
 import { useState } from "react";
-import { Copy, Check, Box } from "lucide-react";
+import { Copy, Check, Box, Layers, Wrench, Package } from "lucide-react";
 import { DependencyItem } from "../hooks/useRegistryState";
 
 interface DependencyGridProps {
   mcVersion: string | null;
   dependencies: DependencyItem[];
   loading?: boolean;
+}
+
+const LOADERS = new Set(["forge", "neoforge", "fabric-loader"]);
+const BUILD_TOOLS = new Set(["forgegradle", "moddev-gradle", "loom", "neoform", "parchment"]);
+
+const CATEGORY_ORDER = ["Loaders", "Build tools", "Mods"];
+
+const CATEGORY_ICONS: Record<string, React.ReactNode> = {
+  Loaders: <Layers className="w-4 h-4 text-zinc-500" />,
+  "Build tools": <Wrench className="w-4 h-4 text-zinc-500" />,
+  Mods: <Package className="w-4 h-4 text-zinc-500" />,
+};
+
+function getCategory(dep: DependencyItem): string {
+  if (LOADERS.has(dep.name)) return "Loaders";
+  if (BUILD_TOOLS.has(dep.name)) return "Build tools";
+  return "Mods";
 }
 
 export function DependencyGrid({ mcVersion, dependencies, loading = false }: DependencyGridProps) {
@@ -20,13 +37,11 @@ export function DependencyGrid({ mcVersion, dependencies, loading = false }: Dep
 
   if (!mcVersion) return null;
 
-  // Group dependencies by loader manually for nice sections
   const grouped = dependencies.reduce(
     (acc, item) => {
-      const loader = item.loader.toLowerCase();
-      const groupName = loader === "universal" ? "Common / Universal" : loader;
-      if (!acc[groupName]) acc[groupName] = [];
-      acc[groupName].push(item);
+      const category = getCategory(item);
+      if (!acc[category]) acc[category] = [];
+      acc[category].push(item);
       return acc;
     },
     {} as Record<string, DependencyItem[]>,
@@ -37,8 +52,8 @@ export function DependencyGrid({ mcVersion, dependencies, loading = false }: Dep
 
     return (
       <div className="mb-10" key={title}>
-        <h3 className="text-sm font-semibold mb-4 flex items-center gap-2 text-zinc-200 border-b border-zinc-800 pb-2 capitalize">
-          <Box className="w-4 h-4 text-zinc-500" />
+        <h3 className="text-sm font-semibold mb-4 flex items-center gap-2 text-zinc-200 border-b border-zinc-800 pb-2">
+          {CATEGORY_ICONS[title] ?? <Box className="w-4 h-4 text-zinc-500" />}
           {title}
         </h3>
 
@@ -47,13 +62,12 @@ export function DependencyGrid({ mcVersion, dependencies, loading = false }: Dep
             .filter((d) => !!d.version)
             .map((dep) => {
               const copyText = dep.coordinates ? dep.coordinates : dep.version;
+              const loaderLabel = dep.loader !== "universal" ? dep.loader : null;
 
-              // Define subtle accent borders based on loader type
               let borderColor = "hover:border-zinc-600";
-              if (dep.loader.toLowerCase() === "forge") borderColor = "hover:border-blue-500/50";
-              if (dep.loader.toLowerCase() === "neoforge")
-                borderColor = "hover:border-orange-500/50";
-              if (dep.loader.toLowerCase() === "fabric") borderColor = "hover:border-yellow-500/50";
+              if (dep.loader === "forge") borderColor = "hover:border-blue-500/50";
+              if (dep.loader === "neoforge") borderColor = "hover:border-orange-500/50";
+              if (dep.loader === "fabric") borderColor = "hover:border-yellow-500/50";
 
               return (
                 <div
@@ -78,9 +92,11 @@ export function DependencyGrid({ mcVersion, dependencies, loading = false }: Dep
                       </span>
                       <div className="min-w-0">
                         <span className="font-medium text-zinc-200 text-sm block">{dep.name}</span>
-                        <span className="text-[11px] text-zinc-500 uppercase tracking-wider block mt-0.5">
-                          {dep.loader}
-                        </span>
+                        {loaderLabel && (
+                          <span className="text-[11px] text-zinc-500 uppercase tracking-wider block mt-0.5">
+                            {loaderLabel}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -117,9 +133,9 @@ export function DependencyGrid({ mcVersion, dependencies, loading = false }: Dep
         </div>
       ) : dependencies.length > 0 ? (
         <div className="animate-in fade-in duration-300">
-          {Object.entries(grouped)
-            .sort(([a], [b]) => a.localeCompare(b))
-            .map(([groupName, groupItems]) => renderSection(groupName, groupItems))}
+          {CATEGORY_ORDER.filter((cat) => grouped[cat]?.length).map((cat) =>
+            renderSection(cat, grouped[cat]),
+          )}
         </div>
       ) : (
         <div className="glass-panel p-8 text-center text-sm text-zinc-400 mt-4 border border-zinc-800/50">

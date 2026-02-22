@@ -35,7 +35,7 @@ export function GradleSnippet({ dependencies, mcVersion, loading = false }: Grad
 
   const propertyLines: PropertyLine[] = mcVersion
     ? [
-        { key: "minecraft_version", value: mcVersion, icon: "/icons/minecraft.svg" },
+        { key: "minecraft_version", value: mcVersion, icon: "https://github.com/Mojang.png" },
         ...orderedDeps.map((dep) => {
           let keyName = dep.name.replace(/-/g, "_") + "_version";
           if (dep.name === "fabric-loader") keyName = "fabric_loader_version";

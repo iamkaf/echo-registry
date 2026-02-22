@@ -13,7 +13,7 @@ function getGitCommit(): string {
 }
 
 export default defineConfig({
-  plugins: [react(), cloudflare(), tailwindcss()],
+  plugins: [react({ babel: { plugins: ["babel-plugin-react-compiler"] } }), cloudflare(), tailwindcss()],
   define: {
     __GIT_COMMIT__: JSON.stringify(getGitCommit()),
   },

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Echo Registry - Dependency Version Registry</title>
+    <meta
+      name="description"
+      content="Latest Minecraft dependencies - Latest Forge, NeoForge, Fabric, and popular mod versions"
+    />
+    <meta
+      name="keywords"
+      content="Minecraft, Forge, NeoForge, Fabric, dependencies, versions, mods"
+    />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media = 'all'"
+    />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <!-- Kick off API fetches before React boots to eliminate the sequential waterfall -->
+    <script>
+      (function () {
+        var projects = ["amber", "modmenu", "forge-config-api-port", "architectury-api"];
+        try {
+          var saved = localStorage.getItem("echo-projects");
+          if (saved) projects = JSON.parse(saved);
+        } catch (_) {}
+        var pf = (window.__prefetch = {});
+        pf.versions = fetch("/api/versions/minecraft").then(function (r) {
+          return r.json();
+        });
+        pf.versions.then(function (json) {
+          if (json.success && json.data && json.data.versions) {
+            var latest = json.data.versions.find(function (v) {
+              return v.version_type === "release";
+            });
+            if (latest) {
+              var q = projects.length > 0 ? "?projects=" + projects.join(",") : "";
+              pf.depsUrl = "/api/versions/dependencies/" + latest.id + q;
+              pf.deps = fetch(pf.depsUrl).then(function (r) {
+                return r.json();
+              });
+            }
+          }
+        });
+      })();
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

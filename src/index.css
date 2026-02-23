@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+/* Fallback font with metrics matched to Inter, so text doesn't shift when Inter loads */
+@font-face {
+  font-family: "Inter Fallback";
+  src: local("Arial");
+  size-adjust: 107.64%;
+  ascent-override: 90.44%;
+  descent-override: 22.52%;
+  line-gap-override: 0%;
+}
+
+@theme {
+  --color-canvas: #09090b;
+  --color-panel: #18181b;
+  --color-border: #27272a;
+  --color-text-main: #f4f4f5;
+  --color-text-muted: #a1a1aa;
+
+  --color-forge: #f97316;
+  /* Orange 500 */
+  --color-neoforge: #f59e0b;
+  /* Amber 500 */
+  --color-fabric: #fbbf24;
+  /* Yellow 400 (Fabric icon color) */
+
+  --font-sans: "Inter", "Inter Fallback", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+@layer base {
+  body {
+    @apply bg-canvas text-text-main font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-semibold tracking-tight;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-canvas;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-zinc-600;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-panel border border-border shadow-sm rounded-md;
+  }
+}

@@ -104,7 +104,8 @@ All endpoints return JSON with this structure:
 
 For dependency endpoints, data includes:
 - mc_version: The Minecraft version
-- dependencies: Array of objects with name, version, loader, source_url, download_urls
+- dependencies: Array of objects with name, version, loader, source_url, icon_url, download_urls
+  - icon_url: Icon for the dependency — a local path (e.g. /icons/forge.svg) for built-ins, or a Modrinth CDN URL for Modrinth projects. May be null.
 
 ## Success Field:
 All API responses include a required "success" boolean field:

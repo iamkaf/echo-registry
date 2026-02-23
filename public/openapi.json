@@ -250,6 +250,11 @@
             "type": "string",
             "description": "Source URL for version information"
           },
+          "icon_url": {
+            "type": ["string", "null"],
+            "format": "uri",
+            "description": "Icon URL for the dependency. Local path for built-in dependencies (e.g. /icons/forge.svg), Modrinth CDN URL for Modrinth projects."
+          },
           "download_urls": {
             "type": "object",
             "description": "Download URLs by mod loader (for Modrinth projects)",
@@ -426,10 +431,7 @@
                     "type": "object",
                     "description": "Mapping of loaders to version strings (original mod author format)",
                     "additionalProperties": {
-                      "oneOf": [
-                        {"type": "string"},
-                        {"type": "null"}
-                      ],
+                      "oneOf": [{ "type": "string" }, { "type": "null" }],
                       "description": "Version string as provided by mod authors, or null if unavailable (e.g., '20.1.0', '0.102.0', etc.)"
                     }
                   }

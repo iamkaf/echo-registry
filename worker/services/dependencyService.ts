@@ -8,7 +8,6 @@ import {
   sortVersionsSemantically,
 } from "../utils/versionUtils";
 import { parseMavenMetadata, extractVersionTags, findTagContent } from "../utils/xmlParser";
-import { CacheService } from "./cacheService";
 import { fetchWithTimeout } from "../utils/httpClient";
 
 // Icon URLs for built-in (non-Modrinth) dependencies — served from /public/icons/
@@ -50,12 +49,6 @@ interface ModrinthProject {
 }
 
 export class DependencyService {
-  private cacheService: CacheService;
-
-  constructor(kv: KVNamespace) {
-    this.cacheService = new CacheService(kv);
-  }
-
   // Private method to get source URL for a dependency
   private getSourceUrl(name: string): string {
     const sourceUrls: Record<string, string> = {
@@ -73,10 +66,6 @@ export class DependencyService {
 
   // Main method to fetch any dependency
   async fetchDependency(name: string, mcVersion: string): Promise<DependencyVersion> {
-    // Check cache first
-    const cached = await this.cacheService.getCachedDependency(name, mcVersion);
-    if (cached) return cached;
-
     // Check compatibility
     if (!isDependencyCompatible(name, mcVersion)) {
       return this.createIncompatibleVersion(name, mcVersion);
@@ -115,14 +104,10 @@ export class DependencyService {
           result = await this.fetchModrinthProject(name, mcVersion);
       }
 
-      // Cache the result
-      await this.cacheService.cacheDependency(result);
       return result;
     } catch (error) {
       console.error(`Failed to fetch ${name}:`, error);
-      const errorVersion = this.createErrorVersion(name, mcVersion, String(error));
-      await this.cacheService.cacheDependency(errorVersion);
-      return errorVersion;
+      return this.createErrorVersion(name, mcVersion, String(error));
     }
   }
 
@@ -587,50 +572,6 @@ export class DependencyService {
           result.status === "fulfilled",
       )
       .map((result) => result.value);
-  }
-
-  // Validate that query-supplied projects are real Modrinth projects
-  async findInvalidModrinthProjects(projects: string[], mcVersion: string): Promise<string[]> {
-    const uniqueProjects = [...new Set(projects.map((project) => project.trim()).filter(Boolean))];
-    if (uniqueProjects.length === 0) return [];
-
-    const invalidProjects: string[] = [];
-    const encodedVersions = encodeURIComponent(JSON.stringify([mcVersion]));
-
-    const validationResults = await Promise.allSettled(
-      uniqueProjects.map(async (project) => {
-        const url = `${API_URLS.MODRINTH_API}/${encodeURIComponent(project)}/version?game_versions=${encodedVersions}`;
-        const response = await fetchWithTimeout(url);
-
-        if (response.status === 404) {
-          return project;
-        }
-
-        if (!response.ok) {
-          throw new Error(
-            `Unable to validate project "${project}" with Modrinth (status ${response.status})`,
-          );
-        }
-
-        const payload: unknown = await response.json();
-        if (!Array.isArray(payload)) {
-          throw new Error(`Unexpected Modrinth response while validating project "${project}"`);
-        }
-
-        return null;
-      }),
-    );
-
-    validationResults.forEach((result) => {
-      if (result.status === "rejected") {
-        throw result.reason;
-      }
-      if (result.value) {
-        invalidProjects.push(result.value);
-      }
-    });
-
-    return invalidProjects;
   }
 
   // Create error version entry

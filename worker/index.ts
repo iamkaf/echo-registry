@@ -14,7 +14,7 @@ app.use(
   cors({
     origin: "*",
     allowMethods: ["GET", "POST", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization"],
+    allowHeaders: ["Content-Type", "Authorization", "X-Echo-Refresh"],
   }),
 );
 
@@ -23,6 +23,5 @@ app.route("/api/versions", versions);
 app.route("/api/versions/dependencies", dependencies);
 app.route("/api/projects/compatibility", compatibility);
 app.route("/api/health", health);
-
 
 export default app;

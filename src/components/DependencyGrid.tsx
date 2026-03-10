@@ -99,11 +99,7 @@ function SkeletonCard() {
   );
 }
 
-export function DependencyGrid({
-  mcVersion,
-  dependencies,
-  projectCount = 4,
-}: DependencyGridProps) {
+export function DependencyGrid({ mcVersion, dependencies, projectCount = 4 }: DependencyGridProps) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const handleCopy = (text: string, key: string) => {

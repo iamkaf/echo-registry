@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { Env, HealthResponse } from "../types";
-import { CacheService } from "../services/cacheService";
 import { API_CONSTANTS } from "../utils/constants";
 import { formatApiTimestamp } from "../utils/dateUtils";
 
@@ -10,18 +9,12 @@ health.get("/", async (c) => {
   const healthResponse: HealthResponse = {
     status: "ok",
     timestamp: formatApiTimestamp(),
-    cache_status: "connected",
+    cache_status: "disabled",
     external_apis: {},
     success: true,
   };
 
   try {
-    const cacheService = new CacheService(c.env.CACHE);
-
-    // Check cache health
-    const cacheHealth = await cacheService.checkHealth();
-    healthResponse.cache_status = cacheHealth;
-
     // Check external API health with simple requests
     const checks = [
       {
@@ -54,9 +47,6 @@ health.get("/", async (c) => {
     ).length;
 
     if (errorCount > API_CONSTANTS.ERROR_THRESHOLD_COUNT) {
-      healthResponse.status = "degraded";
-    }
-    if (cacheHealth === "disconnected" || cacheHealth === "error") {
       healthResponse.status = "degraded";
     }
 

@@ -37,7 +37,7 @@ export function Layout({ children }: LayoutProps) {
             </a>
             <div className="px-2.5 py-1 rounded bg-canvas border border-border flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span className="font-mono text-[10px] text-zinc-400">v0.8.0</span>
+              <span className="font-mono text-[10px] text-zinc-400">v0.9.0</span>
             </div>
           </div>
         </div>
@@ -47,7 +47,7 @@ export function Layout({ children }: LayoutProps) {
 
       <footer className="border-t border-border mt-auto py-6 bg-canvas">
         <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between text-xs text-text-muted">
-          <p>Echo Registry. Powered by Cloudflare Workers KV.</p>
+          <p>Echo Registry. Powered by Cloudflare Workers.</p>
           <div className="flex items-center gap-3 mt-3 sm:mt-0">
             <span className="font-mono">{__GIT_COMMIT__}</span>
             <span>·</span>

@@ -2,7 +2,7 @@
 
 Echo Registry provides the latest versions of Forge, NeoForge, Fabric, and popular Minecraft mods through a simple REST API and web interface.
 
-Built to be blazing fast, it runs entirely on **Cloudflare Workers** with **Workers KV** for caching, powered by **Hono** on the backend and **React + Vite** on the frontend.
+Built to be blazing fast, it runs entirely on **Cloudflare Workers** with **Cloudflare's response cache** for hot-path caching, powered by **Hono** on the backend and **React + Vite** on the frontend.
 
 ## Overview
 
@@ -17,7 +17,7 @@ It’s designed for mod developers and automated build systems that need current
 
 ## API Endpoints
 
-- `GET /api/health` – Service health and cache connectivity status
+- `GET /api/health` – Service health and external API connectivity status
 - `GET /api/versions/minecraft` – All supported Minecraft versions
 - `GET /api/versions/dependencies/{mcVersion}` – Built-in dependencies for a given Minecraft version
 - `GET /api/projects/compatibility` – Bulk compatibility checking for custom Modrinth projects
@@ -27,6 +27,9 @@ It’s designed for mod developers and automated build systems that need current
 ```bash
 # Get all dependencies for Minecraft 1.21.4
 curl https://echo.iamkaf.com/api/versions/dependencies/1.21.4
+
+# Force a fresh dependency response and repopulate the cache
+curl -H "X-Echo-Refresh: 1" https://echo.iamkaf.com/api/versions/dependencies/1.21.4
 
 # Check compatibility with multiple projects
 curl "https://echo.iamkaf.com/api/projects/compatibility?projects=fabric-api,modmenu&versions=1.21.4"
@@ -38,7 +41,7 @@ curl "https://echo.iamkaf.com/api/projects/compatibility?projects=fabric-api,mod
 
 - **Backend:** Cloudflare Workers, Hono
 - **Frontend:** React, Vite, Tailwind v4
-- **Database:** Workers KV
+- **Caching:** Cloudflare response cache (`caches.default`)
 - **Tooling:** TypeScript (`tsgo`), Oxlint, Oxfmt
 
 ### Requirements
@@ -55,16 +58,11 @@ cd echo-registry
 npm install
 ```
 
-1. Create a Workers KV namespace:
-   ```bash
-   npx wrangler kv namespace create CACHE
-   ```
-2. Update `wrangler.jsonc` and replace the `id` under `kv_namespaces` with your new namespace ID.
-3. Start the Vite development server (which emulates the Worker locally):
+1. Start the Vite development server (which emulates the Worker locally):
    ```bash
    npm run dev
    ```
-4. Visit [http://localhost:5173](http://localhost:5173) (or whatever port Vite assigns).
+2. Visit [http://localhost:5173](http://localhost:5173) (or whatever port Vite assigns).
 
 ### Tooling Commands
 
@@ -78,8 +76,11 @@ npm install
 
 Configuration is managed in `wrangler.jsonc`. Variables available:
 
-- `CACHE_TTL_DEPENDENCIES`: Time (in seconds) to cache dependency queries (default: `300`).
-- `CACHE_TTL_MINECRAFT`: Time (in seconds) to cache the Minecraft manifest (default: `3600`).
+- `CACHE_TTL_DEPENDENCIES`: Time (in seconds) to cache dependency responses (default: `1800`).
+- `CACHE_TTL_MINECRAFT`: Time (in seconds) to cache the Minecraft manifest response (default: `43200`).
+- `CACHE_TTL_COMPATIBILITY`: Time (in seconds) to cache compatibility responses (default: `1800`).
+
+Dependency and compatibility responses are cached by normalized request shape, so query ordering differences do not create separate cache entries.
 
 ## Deployment
 

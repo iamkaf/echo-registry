@@ -71,35 +71,43 @@ export function useRegistryState() {
   }, []);
 
   // Fetch Dependencies whenever version or projects change
-  const fetchDependencies = useCallback((version: string, currentProjects: string[]) => {
-    if (!version) return;
-    setLoading(true);
-    setError(null);
+  const fetchDependencies = useCallback(
+    (version: string, currentProjects: string[], options?: { forceRefresh?: boolean }) => {
+      if (!version) return;
+      setLoading(true);
+      setError(null);
 
-    const query = currentProjects.length > 0 ? `?projects=${currentProjects.join(",")}` : "";
-    const url = `/api/versions/dependencies/${version}${query}`;
+      const query = currentProjects.length > 0 ? `?projects=${currentProjects.join(",")}` : "";
+      const url = `/api/versions/dependencies/${version}${query}`;
 
-    // Reuse the eagerly-fired promise if it matches the requested URL
-    const pf = window.__prefetch;
-    const depsPromise =
-      pf?.depsUrl === url && pf?.deps ? pf.deps : fetch(url).then((r) => r.json());
+      // Reuse the eagerly-fired promise if it matches the requested URL
+      const pf = window.__prefetch;
+      const depsPromise =
+        !options?.forceRefresh && pf?.depsUrl === url && pf?.deps
+          ? pf.deps
+          : fetch(url, {
+              cache: options?.forceRefresh ? "no-store" : "default",
+              headers: options?.forceRefresh ? { "X-Echo-Refresh": "1" } : undefined,
+            }).then((r) => r.json());
 
-    depsPromise
-      .then((json) => {
-        if (json.success && json.data?.dependencies) {
-          setDependencies(json.data.dependencies);
-        } else {
-          setError(json.error || "Failed to load dependencies.");
+      depsPromise
+        .then((json) => {
+          if (json.success && json.data?.dependencies) {
+            setDependencies(json.data.dependencies);
+          } else {
+            setError(json.error || "Failed to load dependencies.");
+            setDependencies([]);
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to load dependencies", err);
+          setError("Network error loading dependencies.");
           setDependencies([]);
-        }
-      })
-      .catch((err) => {
-        console.error("Failed to load dependencies", err);
-        setError("Network error loading dependencies.");
-        setDependencies([]);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+        })
+        .finally(() => setLoading(false));
+    },
+    [],
+  );
 
   // Effect to trigger fetch when version or projects change
   useEffect(() => {
@@ -130,7 +138,7 @@ export function useRegistryState() {
 
   const refresh = () => {
     if (selectedVersion) {
-      fetchDependencies(selectedVersion, projects);
+      fetchDependencies(selectedVersion, projects, { forceRefresh: true });
     }
   };
 

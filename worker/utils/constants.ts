@@ -1,8 +1,10 @@
 import { DependencyVersion } from "../types";
 
-// Cache TTL (milliseconds)
-export const CACHE_TTL_DEPENDENCIES = 5 * 60 * 1000; // 5 minutes
-export const CACHE_TTL_MINECRAFT = 60 * 60 * 1000; // 1 hour
+export const RESPONSE_CACHE_VERSION = "v1";
+
+export const DEFAULT_CACHE_TTL_DEPENDENCIES = 30 * 60; // 30 minutes
+export const DEFAULT_CACHE_TTL_MINECRAFT = 12 * 60 * 60; // 12 hours
+export const DEFAULT_CACHE_TTL_COMPATIBILITY = 30 * 60; // 30 minutes
 
 // HTTP Client Configuration
 export const HTTP_TIMEOUT = 30000; // 30 seconds

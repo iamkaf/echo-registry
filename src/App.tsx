@@ -3,9 +3,6 @@ import { Sidebar } from "./components/Sidebar";
 import { DependencyGrid } from "./components/DependencyGrid";
 import { useRegistryState } from "./hooks/useRegistryState";
 
-// Fire-and-forget health check at startup — no state, no effect needed
-fetch("/api/health").catch((err) => console.error("Health check failed:", err));
-
 export default function App() {
   const {
     minecraftVersions,

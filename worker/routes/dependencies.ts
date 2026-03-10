@@ -1,11 +1,17 @@
 import { Hono } from "hono";
 import { Env } from "../types";
 import { DependencyService } from "../services/dependencyService";
+import { ResponseCacheService } from "../services/responseCacheService";
 import {
   validateMinecraftVersion,
   validateProjectsQuery,
   ValidationError,
 } from "../schemas/apiSchemas";
+import { DEFAULT_CACHE_TTL_DEPENDENCIES } from "../utils/constants";
+import {
+  createDependencyCacheKey,
+  normalizeDependencyProjects,
+} from "../utils/requestNormalization";
 import { createErrorResponse, createCachedResponse } from "../utils/responseUtils";
 
 const dependencies = new Hono<{ Bindings: Env }>();
@@ -22,35 +28,31 @@ dependencies.get("/:mc", async (c) => {
     // Get custom projects from query parameters
     const projectsParam = c.req.query("projects");
     const customProjects = validateProjectsQuery(projectsParam || undefined);
-    const dependencyService = new DependencyService(c.env.CACHE);
+    const { requestProjects, cacheProjects } = normalizeDependencyProjects(customProjects);
+    const dependencyService = new DependencyService();
+    const cacheService = new ResponseCacheService();
+    const cacheKey = createDependencyCacheKey(validatedMcVersion, cacheProjects);
+    const shouldBypassCache = c.req.header("X-Echo-Refresh") === "1";
 
-    if (customProjects.length > 0) {
-      const invalidProjects = await dependencyService.findInvalidModrinthProjects(
-        customProjects,
-        validatedMcVersion,
-      );
-      if (invalidProjects.length > 0) {
-        const errorResponse = createErrorResponse(
-          `Invalid projects parameter. These are not valid Modrinth projects: ${invalidProjects.join(", ")}. The ?projects query only accepts Modrinth project slugs (for example: fabric-api, modmenu, sodium).`,
-        );
-        return c.json(errorResponse, 400);
+    if (!shouldBypassCache) {
+      const cached = await cacheService.match(cacheKey);
+      if (cached) {
+        return cached;
       }
     }
 
-    // Always include fabric-api in the projects list
-    const allProjects = customProjects.includes("fabric-api")
-      ? customProjects
-      : [...customProjects, "fabric-api"];
+    const deps = await dependencyService.fetchAllDependencies(validatedMcVersion, requestProjects);
 
-    const deps = await dependencyService.fetchAllDependencies(validatedMcVersion, allProjects);
-
-    const ttl = parseInt(c.env.CACHE_TTL_DEPENDENCIES || "300");
-    const response = createCachedResponse({
+    const ttl = parseInt(c.env.CACHE_TTL_DEPENDENCIES || `${DEFAULT_CACHE_TTL_DEPENDENCIES}`, 10);
+    const payload = createCachedResponse({
       mc_version: validatedMcVersion,
       dependencies: deps,
     });
-    c.header("Cache-Control", `public, max-age=${ttl}, stale-while-revalidate=${ttl * 2}`);
-    return c.json(response);
+    const response = c.json(payload);
+    response.headers.set("Cache-Control", `public, max-age=${ttl}, stale-while-revalidate=${ttl}`);
+
+    c.executionCtx.waitUntil(cacheService.put(cacheKey, response.clone(), ttl));
+    return response;
   } catch (error) {
     console.error(`Error fetching dependencies for MC ${mcVersion}:`, error);
 

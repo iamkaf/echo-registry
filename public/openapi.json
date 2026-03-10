@@ -3,7 +3,7 @@
   "info": {
     "title": "Echo Registry API",
     "description": "Latest Forge, NeoForge, Fabric, and popular mod versions for Minecraft. The compatibility endpoint now returns version information with loader-specific version strings.",
-    "version": "0.5.0",
+    "version": "0.9.0",
     "contact": {
       "name": "Echo Registry"
     }
@@ -84,8 +84,18 @@
             "schema": {
               "type": "string"
             },
-            "description": "Comma-separated list of additional Modrinth project slugs to include. Returns 400 if any value is not a valid Modrinth project slug.",
+            "description": "Comma-separated list of additional Modrinth project slugs to include. Invalid slugs are returned as failed dependency entries inside a 200 response.",
             "example": "fabric-api,modmenu,rei"
+          },
+          {
+            "name": "X-Echo-Refresh",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["1"]
+            },
+            "description": "Optional header to bypass the cached dependency response and repopulate it with fresh data."
           }
         ],
         "responses": {
@@ -100,7 +110,7 @@
             }
           },
           "400": {
-            "description": "Invalid parameters (e.g., one or more projects are not valid Modrinth project slugs)"
+            "description": "Invalid parameters (e.g., malformed Minecraft version)"
           },
           "500": {
             "description": "Failed to fetch dependencies"
@@ -351,7 +361,7 @@
               },
               "cache_status": {
                 "type": "string",
-                "enum": ["connected", "disconnected", "error"]
+                "enum": ["connected", "disconnected", "error", "disabled"]
               },
               "external_apis": {
                 "type": "object",

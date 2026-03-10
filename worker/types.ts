@@ -50,15 +50,15 @@ export interface ApiResponse<T> {
 export interface HealthResponse {
   status: "ok" | "degraded" | "down";
   timestamp: string;
-  cache_status: "connected" | "disconnected" | "error";
+  cache_status: "connected" | "disconnected" | "error" | "disabled";
   external_apis: Record<string, "ok" | "error">;
   success: boolean;
 }
 
 // Env bindings for Cloudflare Worker
 export interface Env {
-  CACHE: KVNamespace;
   CRON_SECRET?: string;
   CACHE_TTL_DEPENDENCIES?: string;
   CACHE_TTL_MINECRAFT?: string;
+  CACHE_TTL_COMPATIBILITY?: string;
 }

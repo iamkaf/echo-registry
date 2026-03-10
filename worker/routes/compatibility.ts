@@ -1,7 +1,13 @@
 import { Hono } from "hono";
 import { Env } from "../types";
 import { DependencyService } from "../services/dependencyService";
+import { ResponseCacheService } from "../services/responseCacheService";
 import { validateProjectCompatibilityQuery, ValidationError } from "../schemas/apiSchemas";
+import { DEFAULT_CACHE_TTL_COMPATIBILITY } from "../utils/constants";
+import {
+  createCompatibilityCacheKey,
+  normalizeCompatibilityInputs,
+} from "../utils/requestNormalization";
 import { createErrorResponse, createCachedResponse } from "../utils/responseUtils";
 
 const compatibility = new Hono<{ Bindings: Env }>();
@@ -30,15 +36,28 @@ compatibility.get("/", async (c) => {
     }
 
     const { projects, versions } = validateProjectCompatibilityQuery(projectsParam, versionsParam);
+    const { requestProjects, requestVersions, cacheProjects, cacheVersions } =
+      normalizeCompatibilityInputs(projects, versions);
+    const cacheService = new ResponseCacheService();
+    const cacheKey = createCompatibilityCacheKey(cacheProjects, cacheVersions);
+    const cached = await cacheService.match(cacheKey);
+    if (cached) {
+      return cached;
+    }
 
-    const dependencyService = new DependencyService(c.env.CACHE);
+    const dependencyService = new DependencyService();
     const projectCompatibility = await dependencyService.checkLoadersForProjects(
-      projects,
-      versions,
+      requestProjects,
+      requestVersions,
     );
 
-    const response = createCachedResponse(projectCompatibility);
-    return c.json(response);
+    const ttl = parseInt(c.env.CACHE_TTL_COMPATIBILITY || `${DEFAULT_CACHE_TTL_COMPATIBILITY}`, 10);
+    const payload = createCachedResponse(projectCompatibility);
+    const response = c.json(payload);
+    response.headers.set("Cache-Control", `public, max-age=${ttl}, stale-while-revalidate=${ttl}`);
+
+    c.executionCtx.waitUntil(cacheService.put(cacheKey, response.clone(), ttl));
+    return response;
   } catch (error) {
     console.error("Error checking project compatibility:", error);
 

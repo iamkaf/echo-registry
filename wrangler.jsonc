@@ -20,4 +20,16 @@
   ],
   "workers_dev": true,
   "preview_urls": true,
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "persist": true,
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": true,
+      "persist": true
+    }
+  }
 }

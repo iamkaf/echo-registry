@@ -3,7 +3,7 @@
   "info": {
     "title": "Echo Registry API",
     "description": "Latest Forge, NeoForge, Fabric, and popular mod versions for Minecraft. The compatibility endpoint now returns version information with loader-specific version strings.",
-    "version": "0.9.0",
+    "version": "0.9.1",
     "contact": {
       "name": "Echo Registry"
     }

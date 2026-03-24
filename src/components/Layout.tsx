@@ -37,7 +37,7 @@ export function Layout({ children }: LayoutProps) {
             </a>
             <div className="px-2.5 py-1 rounded bg-canvas border border-border flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span className="font-mono text-[10px] text-zinc-400">v0.9.0</span>
+              <span className="font-mono text-[10px] text-zinc-400">v0.9.1</span>
             </div>
           </div>
         </div>

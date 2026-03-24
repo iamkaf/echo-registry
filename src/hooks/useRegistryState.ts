@@ -18,14 +18,31 @@ export interface MinecraftVersion {
   version_type: string;
 }
 
+interface DependencyResponse {
+  success?: boolean;
+  error?: string;
+  data?: {
+    dependencies?: DependencyItem[];
+  };
+}
+
 declare global {
   interface Window {
     __prefetch?: {
       versions?: Promise<any>;
-      deps?: Promise<any>;
+      deps?: Promise<DependencyResponse>;
       depsUrl?: string;
     };
   }
+}
+
+function needsFabricApiRecovery(deps: DependencyItem[]): boolean {
+  if (deps.length === 0) return false;
+
+  const fabricApi = deps.find((dep) => dep.name === "fabric-api");
+  if (!fabricApi) return true;
+
+  return !fabricApi.version || fabricApi.version === "N/A";
 }
 
 export function useRegistryState() {
@@ -47,7 +64,8 @@ export function useRegistryState() {
   // Initial load: Fetch Minecraft versions — reuse the eagerly-fired promise from index.html
   useEffect(() => {
     const versionsPromise =
-      window.__prefetch?.versions ?? fetch("/api/versions/minecraft").then((r) => r.json());
+      window.__prefetch?.versions ??
+      fetch("/api/versions/minecraft", { cache: "no-store" }).then((r) => r.json());
 
     versionsPromise
       .then((json) => {
@@ -86,13 +104,18 @@ export function useRegistryState() {
         !options?.forceRefresh && pf?.depsUrl === url && pf?.deps
           ? pf.deps
           : fetch(url, {
-              cache: options?.forceRefresh ? "no-store" : "default",
+              cache: "no-store",
               headers: options?.forceRefresh ? { "X-Echo-Refresh": "1" } : undefined,
-            }).then((r) => r.json());
+            }).then((r) => r.json() as Promise<DependencyResponse>);
 
       depsPromise
         .then((json) => {
           if (json.success && json.data?.dependencies) {
+            if (!options?.forceRefresh && needsFabricApiRecovery(json.data.dependencies)) {
+              fetchDependencies(version, currentProjects, { forceRefresh: true });
+              return;
+            }
+
             setDependencies(json.data.dependencies);
           } else {
             setError(json.error || "Failed to load dependencies.");

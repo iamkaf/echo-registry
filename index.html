@@ -45,7 +45,7 @@
           if (saved) projects = JSON.parse(saved);
         } catch (_) {}
         var pf = (window.__prefetch = {});
-        pf.versions = fetch("/api/versions/minecraft").then(function (r) {
+        pf.versions = fetch("/api/versions/minecraft", { cache: "no-store" }).then(function (r) {
           return r.json();
         });
         pf.versions.then(function (json) {
@@ -56,7 +56,7 @@
             if (latest) {
               var q = projects.length > 0 ? "?projects=" + projects.join(",") : "";
               pf.depsUrl = "/api/versions/dependencies/" + latest.id + q;
-              pf.deps = fetch(pf.depsUrl).then(function (r) {
+              pf.deps = fetch(pf.depsUrl, { cache: "no-store" }).then(function (r) {
                 return r.json();
               });
             }

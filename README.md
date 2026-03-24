@@ -4,6 +4,8 @@ Echo Registry provides the latest versions of Forge, NeoForge, Fabric, and popul
 
 Built to be blazing fast, it runs entirely on **Cloudflare Workers** with **Cloudflare's response cache** for hot-path caching, powered by **Hono** on the backend and **React + Vite** on the frontend.
 
+![Production screenshot of Echo Registry](docs/production-screenshot.png)
+
 ## Overview
 
 The service exposes up-to-date version data for core mod loaders, popular mods, and development tools.

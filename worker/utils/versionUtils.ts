@@ -41,6 +41,14 @@ export function isDependencyCompatible(dependencyName: string, mcVersion: string
 // Extract minor version from MC version (e.g., "1.21.1" -> "21.1")
 export function extractMinorVersion(mcVersion: string): string {
   const parts: string[] = mcVersion.split(".");
+  const major: number = parseInt(parts[0]) || 0;
+
+  // Modern Minecraft versions use a "major.minor" scheme (for example, 26.1),
+  // while older versions use "1.minor[.patch]" (for example, 1.21.4).
+  if (major >= 20 && parts.length >= 2) {
+    return `${parts[0]}.${parts[1]}`;
+  }
+
   if (parts.length >= 3) {
     return `${parts[1]}.${parts[2]}`;
   } else if (parts.length === 2) {

@@ -34,7 +34,7 @@ export const API_URLS = {
     "https://maven.parchmentmc.org/org/parchmentmc/data/parchment-{version}/maven-metadata.xml",
   NEOFORM_METADATA: "https://maven.neoforged.net/releases/net/neoforged/neoform/maven-metadata.xml",
   FORGEGRADLE_METADATA:
-    "https://maven.minecraftforge.net/net/minecraftforge/gradle/ForgeGradle/maven-metadata.xml",
+    "https://plugins.gradle.org/m2/net/minecraftforge/gradle/net.minecraftforge.gradle.gradle.plugin/maven-metadata.xml",
   MODDEV_GRADLE_METADATA:
     "https://maven.neoforged.net/releases/net/neoforged/moddev-gradle/maven-metadata.xml",
   LOOM_METADATA: "https://maven.fabricmc.net/net/fabricmc/fabric-loom/maven-metadata.xml",

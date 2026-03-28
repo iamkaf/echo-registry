@@ -95,15 +95,16 @@ describe("External API Integration", () => {
   });
 
   // -------------------------------------------------------------------------
-  // ForgeGradle Maven metadata
+  // ForgeGradle Gradle Plugin Portal metadata
   // -------------------------------------------------------------------------
 
-  it.concurrent("ForgeGradle maven-metadata.xml is parseable and has versions", async () => {
+  it.concurrent("ForgeGradle plugin metadata is parseable and has latest and versions", async () => {
     const res = await fetch(API_URLS.FORGEGRADLE_METADATA, { headers: HEADERS });
     expect(res.status).toBe(200);
 
-    const { versions } = parseMavenMetadata(await res.text());
+    const { latest, versions } = parseMavenMetadata(await res.text());
     expect(versions.length).toBeGreaterThan(0);
+    expect(typeof latest).toBe("string");
   });
 
   // -------------------------------------------------------------------------

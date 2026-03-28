@@ -57,7 +57,8 @@ export class DependencyService {
       "fabric-loader": "https://meta.fabricmc.net/v2/versions/loader/",
       parchment: "https://maven.parchmentmc.org/",
       neoform: "https://maven.neoforged.net/releases/net/neoforged/neoform/",
-      forgegradle: "https://maven.minecraftforge.net/net/minecraftforge/gradle/ForgeGradle/",
+      forgegradle:
+        "https://plugins.gradle.org/plugin/net.minecraftforge.gradle",
       "moddev-gradle": "https://maven.neoforged.net/releases/net/neoforged/moddev-gradle/",
       loom: "https://maven.fabricmc.net/net/fabricmc/fabric-loom/",
     };
@@ -424,7 +425,7 @@ export class DependencyService {
       loader: "forge",
       version: latestVersion,
       mc_version: mcVersion,
-      source_url: "https://maven.minecraftforge.net/net/minecraftforge/gradle/ForgeGradle/",
+      source_url: "https://plugins.gradle.org/plugin/net.minecraftforge.gradle",
       icon_url: BUILT_IN_ICON_URLS.forgegradle,
       notes: "Latest version",
       fallback_used: false,

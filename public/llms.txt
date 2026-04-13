@@ -1,131 +1,97 @@
 # Echo Registry API - Quick Start Guide for AI Agents
-# Get latest versions of Minecraft mod loaders and dependencies instantly
 
-## What this service does:
-Echo Registry provides up-to-date version data for Forge, NeoForge, Fabric, and popular Minecraft mods through a simple REST API. Perfect for automated build systems and dependency management.
+Echo Registry provides up-to-date version data for Forge, NeoForge, Fabric, and popular Minecraft mods through a simple REST API.
 
-## Base URL: https://echo.iamkaf.com
-## OpenAPI Specification: https://echo.iamkaf.com/openapi.json
+## Base URL
 
-## Available Endpoints:
+`https://echo.iamkaf.com`
 
-### 1. Health Check
-GET /api/health
-Returns service status and external API connectivity. This is a manual/admin endpoint and is not called by the web app on startup.
+## OpenAPI specification
 
-### 2. Get Supported Minecraft Versions
-GET /api/versions/minecraft
-Returns all supported Minecraft versions with their types (release, snapshot, etc.).
+`https://echo.iamkaf.com/openapi.json`
 
-### 3. Get Dependencies for Minecraft Version
-GET /api/versions/dependencies/{mc_version}
-This is the main endpoint you'll use.
+## Available endpoints
 
-Examples:
-- GET /api/versions/dependencies/1.21.1
-- GET /api/versions/dependencies/1.20.6
-- GET /api/versions/dependencies/1.21.1?projects=fabric-api,modmenu
-- GET /api/versions/dependencies/1.21.1 with header X-Echo-Refresh: 1
+### Health check
 
-The optional ?projects parameter lets you fetch specific mods instead of all available dependencies.
-If any value in ?projects is not a valid Modrinth project slug, the endpoint still returns HTTP 200 and includes a failed dependency entry with error details in `notes`.
-Do not pass built-in dependencies (`forge`, `neoforge`, `fabric-loader`, `parchment`, `neoform`, `moddev-gradle`, `forgegradle`, `loom`) in ?projects; they are always included automatically.
-Use the optional `X-Echo-Refresh: 1` header only when you explicitly need to bypass the cached dependency response.
+- `GET /api/health`
+- Returns service status and external API connectivity
 
-### 4. Check Project Compatibility
-GET /api/projects/compatibility?projects={projects}&versions={versions}
-Check which Modrinth projects are compatible with specific loaders across multiple Minecraft versions and returns version information.
+### Get supported Minecraft versions
+
+- `GET /api/versions/minecraft`
+- Returns all supported Minecraft versions with their types
+
+### Get dependencies for a Minecraft version
+
+- `GET /api/versions/dependencies/{mcVersion}`
+- Main endpoint for resolved loader, mod, and tool versions
 
 Examples:
-- GET /api/projects/compatibility?projects=fabric-api&versions=1.21.1
-- GET /api/projects/compatibility?projects=fabric-api,amber,sodium&versions=1.20.1,1.21.1
+
+- `GET /api/versions/dependencies/1.21.1`
+- `GET /api/versions/dependencies/1.20.6`
+- `GET /api/versions/dependencies/1.21.1?projects=fabric-api,modmenu`
+- `GET /api/versions/dependencies/1.21.1` with header `X-Echo-Refresh: 1`
+
+Notes:
+
+- The optional `projects` query parameter adds specific Modrinth project slugs
+- Invalid project slugs still return HTTP 200 and appear as failed dependency entries in `data.dependencies`
+- Built-in dependencies such as `forge`, `neoforge`, `fabric-loader`, `parchment`, `neoform`, `moddev-gradle`, `forgegradle`, and `loom` are included automatically
+- Use `X-Echo-Refresh: 1` only when you need to bypass the cached dependency response
+
+### Check project compatibility
+
+- `GET /api/projects/compatibility?projects={projects}&versions={versions}`
+- Returns loader-specific version availability for each requested project and Minecraft version
+
+Examples:
+
+- `GET /api/projects/compatibility?projects=fabric-api&versions=1.21.1`
+- `GET /api/projects/compatibility?projects=fabric-api,amber,sodium&versions=1.20.1,1.21.1`
 
 Parameters:
-- projects: Comma-separated Modrinth project slugs (required)
-- versions: Comma-separated Minecraft versions (required)
 
-Response format:
-{
-  "data": {
-    "forge": {
-      "1.21.10": {
-        "forge": "60.1.0",
-        "neoforge": null,
-        "fabric": null
-      }
-    },
-    "neoforge": {
-      "1.21.10": {
-        "forge": null,
-        "neoforge": "21.10.63",
-        "fabric": null
-      }
-    },
-    "fabric-api": {
-      "1.21.10": {
-        "forge": null,
-        "neoforge": null,
-        "fabric": "0.138.3+1.21.10"
-      }
-    },
-    "amber": {
-      "1.21.10": {
-        "forge": "8.1.0+1.21.10",
-        "neoforge": "8.1.0+1.21.10",
-        "fabric": "8.1.0+1.21.10"
-      }
-    },
-    "jade": {
-      "1.21.10": {
-        "forge": null,
-        "neoforge": "20.0.5+neoforge",
-        "fabric": "20.1.0+fabric"
-      }
-    }
-  },
-  "timestamp": "2025-01-XX...",
-  "cached_at": "2025-01-XX...",
-  "success": true
-}
+- `projects`: comma-separated Modrinth project slugs
+- `versions`: comma-separated Minecraft versions
 
-Note: Every response includes all three loaders (forge, neoforge, fabric) with version strings exactly as provided by mod authors, or null if unavailable. This ensures consistent response format across all requests.
+## Available dependency categories
 
-## What Dependencies Are Available:
 - Loaders: Forge, NeoForge, Fabric Loader
-- Popular Mods: Fabric API, Mod Menu, REI, JEI, Architectury API, Amber, Forge Config API Port or any other mod hosted on Modrinth
-- Dev Tools: Parchment Mappings, NeoForm, ForgeGradle, ModDev Gradle
+- Popular mods and APIs: Fabric API, Mod Menu, REI, JEI, Architectury API, Amber, Forge Config API Port, plus other Modrinth-hosted projects requested through `projects`
+- Dev tools: Parchment Mappings, NeoForm, ForgeGradle, ModDev Gradle
 
-## Response Format:
-All endpoints return JSON with this structure:
+## Response format
+
+Successful API responses use this structure:
+
+```json
 {
-  "data": { ... },
-  "timestamp": "2025-01-XX...",
-  "cached_at": "2025-01-XX...",
+  "data": {},
+  "timestamp": "2025-11-29T12:00:00Z",
+  "cached_at": "2025-11-29T12:00:00Z",
   "success": true
 }
+```
 
-For dependency endpoints, data includes:
-- mc_version: The Minecraft version
-- dependencies: Array of objects with name, version, loader, source_url, icon_url, download_urls
-  - icon_url: Icon for the dependency — a local path (e.g. /icons/forge.svg) for built-ins, or a Modrinth CDN URL for Modrinth projects. May be null.
+Dependency responses include:
 
-## Success Field:
-All API responses include a required "success" boolean field:
-- "success": true - Request completed successfully and contains data
-- "success": false - Request failed and contains an error message
-- Health endpoint: "success": true for HTTP 200, "success": false for server errors
+- `mc_version`
+- `dependencies`
+- Each dependency includes fields such as `name`, `loader`, `version`, `source_url`, `icon_url`, and `download_urls`
 
-## Rate Limiting & Caching:
-- Responses are cached at the Cloudflare edge to reduce external API load
-- Check the "cached_at" timestamp in responses
-- The dependency and compatibility endpoints normalize query ordering before caching
+Compatibility responses include all three loaders, with a version string or `null` for each loader slot.
 
-## Error Handling:
-- 400: Bad request (invalid parameters)
-- 500: Server error (external service issues)
-- All error responses include "success": false, descriptive message and timestamp
+## Error handling
 
-## Production Usage:
-Deployed at: https://echo.iamkaf.com
-The service runs on Cloudflare Workers with response caching on the hot GET endpoints.
-Source code available on GitHub for reference or contributions.
+- `400`: invalid parameters
+- `401`: unauthorized for protected endpoints
+- `500`: upstream or server error
+- Error responses include `success: false`, an error message, and a timestamp
+
+## Caching
+
+- Responses are cached at the Cloudflare edge
+- Check `cached_at` to see when a cached response was generated
+- Dependency and compatibility requests normalize query ordering before cache lookup
